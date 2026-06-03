@@ -1,0 +1,204 @@
+/* ===== リセット ===== */
+/* すべての要素でボックスサイズを border-box に統一し、
+   デフォルトの margin / padding を消す */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ===== ページ全体 ===== */
+body {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  background: #f5f4f0;   /* ページ背景：温かみのあるオフホワイト */
+  color: #2c2c2a;        /* 本文テキスト：ほぼ黒 */
+  min-height: 100vh;
+  padding: 2rem 1rem;    /* 上下左右の余白 */
+}
+
+/* ===== 中央揃えコンテナ ===== */
+.container {
+  max-width: 860px;
+  margin: 0 auto;        /* 水平中央揃え */
+}
+
+/* ===== ページヘッダー ===== */
+header {
+  margin-bottom: 2rem;
+}
+
+header h1 {
+  font-size: 22px;
+  font-weight: 500;
+  color: #2c2c2a;
+  margin-bottom: 4px;
+}
+
+header p {
+  font-size: 13px;
+  color: #5f5e5a;        /* サブテキスト：やや薄いグレー */
+}
+
+/* ===== カード（白い囲み枠） ===== */
+/* 入力エリアとグラフエリアの両方で使う共通コンテナ */
+.card {
+  background: #fff;
+  border: 0.5px solid rgba(44,44,42,0.15);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+/* カード内の小見出し */
+.card-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #5f5e5a;
+  margin-bottom: 1rem;
+  text-transform: none;
+  letter-spacing: 0.03em;
+}
+
+/* ===== 入力フォーム：レスポンシブ グリッド ===== */
+/* 画面幅に応じて列数が自動調整される（minmax(130px, 1fr)）*/
+.controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+}
+
+/* ラベル + input を縦に並べる1フィールド */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 12px;
+  color: #888780;        /* ラベル：淡いグレー */
+}
+
+.field input {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 14px;
+  border: 0.5px solid rgba(44,44,42,0.2);
+  border-radius: 8px;
+  outline: none;
+  background: #fff;
+  color: #2c2c2a;
+  transition: border-color 0.15s;  /* フォーカス時のアニメーション */
+}
+
+/* フォーカス時：枠線を少し濃くしてフィードバック */
+.field input:focus {
+  border-color: rgba(44,44,42,0.5);
+}
+
+/* ===== 数式表示バー ===== */
+/* f(x) = ax² + bx + c を等幅フォントで表示する帯 */
+.formula-bar {
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  font-weight: 500;
+  color: #2c2c2a;
+  background: #f5f4f0;
+  border: 0.5px solid rgba(44,44,42,0.12);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 1.25rem;
+}
+
+/* ===== 統計カードグリッド ===== */
+/* 最小値・最大値・頂点の3枚のカードを横並びにする */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  margin-bottom: 1.25rem;
+}
+
+/* 個々の統計カード */
+.stat-card {
+  background: #f5f4f0;
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+/* 統計カード内のラベル（"最小値" など） */
+.stat-label {
+  font-size: 11px;
+  color: #888780;
+  margin-bottom: 4px;
+}
+
+/* 統計カード内の数値（大きく目立たせる） */
+.stat-value {
+  font-size: 20px;
+  font-weight: 500;
+}
+
+/* 統計カード内の座標テキスト（等幅フォント） */
+.stat-coord {
+  font-size: 11px;
+  color: #888780;
+  margin-top: 2px;
+  font-family: 'Courier New', monospace;
+}
+
+/* 最小値：青、最大値：赤、頂点：緑 */
+.stat-min { color: #185FA5; }
+.stat-max { color: #A32D2D; }
+.stat-vertex { color: #3B6D11; }
+
+/* ===== エラーメッセージ ===== */
+/* 入力不正時に赤字で表示。min-height でレイアウトがずれないようにする */
+.error-msg {
+  font-size: 13px;
+  color: #A32D2D;
+  padding: 6px 0;
+  min-height: 22px;
+}
+
+/* ===== 凡例 ===== */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: #5f5e5a;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 凡例の丸いドット（最小値・最大値・頂点用） */
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+/* 凡例の線分（f(x) カーブ用） */
+.legend-line {
+  width: 20px;
+  height: 2px;
+  background: #b4b2a9;
+}
+
+/* ===== グラフ描画エリア ===== */
+/* Canvas の高さを固定し、Chart.js が responsive で幅に合わせて伸縮 */
+.chart-wrap {
+  position: relative;
+  width: 100%;
+  height: 380px;
+}
+
+/* ===== フッター ===== */
+footer {
+  text-align: center;
+  font-size: 12px;
+  color: #b4b2a9;
+  margin-top: 2rem;
+}
