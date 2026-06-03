@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>二次関数グラフ探索</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/3.0.1/chartjs-plugin-annotation.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      background: #f5f4f0;
+      color: #2c2c2a;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 22px;
+      font-weight: 500;
+      color: #2c2c2a;
+      margin-bottom: 4px;
+    }
+
+    header p {
+      font-size: 13px;
+      color: #5f5e5a;
+    }
+
+    .card {
+      background: #fff;
+      border: 0.5px solid rgba(44,44,42,0.15);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: #5f5e5a;
+      margin-bottom: 1rem;
+      text-transform: none;
+      letter-spacing: 0.03em;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 12px;
+      color: #888780;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 8px 10px;
+      font-size: 14px;
+      border: 0.5px solid rgba(44,44,42,0.2);
+      border-radius: 8px;
+      outline: none;
+      background: #fff;
+      color: #2c2c2a;
+      transition: border-color 0.15s;
+    }
+
+    .field input:focus {
+      border-color: rgba(44,44,42,0.5);
+    }
+
+    .formula-bar {
+      font-family: 'Courier New', monospace;
+      font-size: 16px;
+      font-weight: 500;
+      color: #2c2c2a;
+      background: #f5f4f0;
+      border: 0.5px solid rgba(44,44,42,0.12);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 1.25rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
+      margin-bottom: 1.25rem;
+    }
+
+    .stat-card {
+      background: #f5f4f0;
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: #888780;
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: 500;
+    }
+
+    .stat-coord {
+      font-size: 11px;
+      color: #888780;
+      margin-top: 2px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .stat-min { color: #185FA5; }
+    .stat-max { color: #A32D2D; }
+    .stat-vertex { color: #3B6D11; }
+
+    .error-msg {
+      font-size: 13px;
+      color: #A32D2D;
+      padding: 6px 0;
+      min-height: 22px;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      color: #5f5e5a;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .legend-line {
+      width: 20px;
+      height: 2px;
+      background: #b4b2a9;
+    }
+
+    .chart-wrap {
+      position: relative;
+      width: 100%;
+      height: 380px;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 12px;
+      color: #b4b2a9;
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>二次関数グラフ探索</h1>
+      <p>係数と定義域を入力すると、グラフと最大値・最小値が表示されます</p>
+    </header>
+
+    <div class="card">
+      <p class="card-title">係数・定義域の入力</p>
+      <div class="controls">
+        <div class="field">
+          <label for="coef-a">係数 a（x²）</label>
+          <input type="number" id="coef-a" value="1" step="0.1" />
+        </div>
+        <div class="field">
+          <label for="coef-b">係数 b（x）</label>
+          <input type="number" id="coef-b" value="0" step="0.1" />
+        </div>
+        <div class="field">
+          <label for="coef-c">定数 c</label>
+          <input type="number" id="coef-c" value="0" step="0.1" />
+        </div>
+        <div class="field">
+          <label for="dom-min">定義域 最小値</label>
+          <input type="number" id="dom-min" value="-5" step="0.5" />
+        </div>
+        <div class="field">
+          <label for="dom-max">定義域 最大値</label>
+          <input type="number" id="dom-max" value="5" step="0.5" />
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="formula-bar" id="formula-display">f(x) = x²</div>
+
+      <div class="stats-grid" id="stats-area"></div>
+      <div class="error-msg" id="error-msg"></div>
+
+      <div class="legend">
+        <span class="legend-item"><span class="legend-line"></span>f(x)</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#185FA5;border:2px solid #0C447C;"></span>最小値</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#E24B4A;border:2px solid #A32D2D;"></span>最大値</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#639922;border:2px solid #3B6D11;"></span>頂点</span>
+      </div>
+
+      <div class="chart-wrap">
+        <canvas id="qfChart" role="img" aria-label="二次関数のグラフ。最大値・最小値の点をプロットします。"></canvas>
+      </div>
+    </div>
+
+    <footer>二次関数 f(x) = ax² + bx + c</footer>
+  </div>
+
+  <script>
+    let chart = null;
+
+    function fmt(v, d = 3) {
+      return parseFloat(v.toFixed(d));
+    }
+
+    function compute() {
+      const a = parseFloat(document.getElementById('coef-a').value);
+      const b = parseFloat(document.getElementById('coef-b').value);
+      const c = parseFloat(document.getElementById('coef-c').value);
+      const xMin = parseFloat(document.getElementById('dom-min').value);
+      const xMax = parseFloat(document.getElementById('dom-max').value);
+      const err = document.getElementById('error-msg');
+
+      if (isNaN(a) || isNaN(b) || isNaN(c) || isNaN(xMin) || isNaN(xMax)) {
+        err.textContent = '有効な数値を入力してください。';
+        return;
+      }
+      if (xMin >= xMax) {
+        err.textContent = '定義域: 最小値 < 最大値 となるように入力してください。';
+        return;
+      }
+      if (a === 0) {
+        err.textContent = 'a ≠ 0 の二次関数を入力してください（a = 0 は一次関数です）。';
+        return;
+      }
+      err.textContent = '';
+
+      // 数式表示
+      const aDisp = a === 1 ? '' : a === -1 ? '-' : String(a);
+      const bAbs = Math.abs(b);
+      const cAbs = Math.abs(c);
+      let formula = `f(x) = ${aDisp}x²`;
+      if (b > 0) formula += ` + ${b}x`;
+      else if (b < 0) formula += ` − ${bAbs}x`;
+      if (c > 0) formula += ` + ${c}`;
+      else if (c < 0) formula += ` − ${cAbs}`;
+      document.getElementById('formula-display').textContent = formula;
+
+      // 点列生成
+      const N = 400;
+      const step = (xMax - xMin) / N;
+      const xs = [], ys = [];
+      for (let i = 0; i <= N; i++) {
+        const x = xMin + i * step;
+        xs.push(x);
+        ys.push(a * x * x + b * x + c);
+      }
+
+      // 頂点
+      const vx = fmt(-b / (2 * a));
+      const vy = fmt(c - b * b / (4 * a));
+
+      // 最大値・最小値：候補点（両端 + 定義域内の頂点）を解析的に評価
+      const f = x => a * x * x + b * x + c;
+      const candidates = [
+        { x: xMin, y: f(xMin) },
+        { x: xMax, y: f(xMax) },
+      ];
+      if (-b / (2 * a) > xMin && -b / (2 * a) < xMax) {
+        candidates.push({ x: -b / (2 * a), y: f(-b / (2 * a)) });
+      }
+
+      const minY = fmt(Math.min(...candidates.map(p => p.y)));
+      const maxY = fmt(Math.max(...candidates.map(p => p.y)));
+      const EPS = 1e-9;
+      const minPoints = candidates.filter(p => Math.abs(p.y - minY) < EPS).map(p => ({ x: fmt(p.x), y: minY }));
+      const maxPoints = candidates.filter(p => Math.abs(p.y - maxY) < EPS).map(p => ({ x: fmt(p.x), y: maxY }));
+
+      // 統計カード
+      const minCoords = minPoints.map(p => `x = ${p.x}`).join(',  ');
+      const maxCoords = maxPoints.map(p => `x = ${p.x}`).join(',  ');
+      document.getElementById('stats-area').innerHTML = `
+        <div class="stat-card">
+          <div class="stat-label">最小値</div>
+          <div class="stat-value stat-min">${minY}</div>
+          <div class="stat-coord">${minCoords},  y = ${minY}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">最大値</div>
+          <div class="stat-value stat-max">${maxY}</div>
+          <div class="stat-coord">${maxCoords},  y = ${maxY}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">頂点（軸対称の中心）</div>
+          <div class="stat-value stat-vertex" style="font-size:15px;">(${vx}, ${vy})</div>
+          <div class="stat-coord">x = −b / 2a = ${vx}</div>
+        </div>
+      `;
+
+      const mainData = xs.map((x, i) => ({ x: fmt(x), y: fmt(ys[i]) }));
+      const xRange = xMax - xMin;
+      const xPad = xRange * 0.08 || 0.5;
+      const xAxisMin = xMin - xPad;
+      const xAxisMax = xMax + xPad;
+
+      const yPad = (maxY - minY) * 0.22 || 1;
+      const yAxisMin = minY - yPad;
+      const yAxisMax = maxY + yPad;
+
+      const datasets = [
+        {
+          label: 'f(x)',
+          data: mainData,
+          borderColor: '#b4b2a9',
+          borderWidth: 2,
+          pointRadius: 0,
+          tension: 0.3,
+          fill: false,
+          type: 'line',
+          order: 4,
+        },
+        {
+          label: `最小値 y = ${minY}`,
+          data: minPoints,
+          type: 'scatter',
+          pointRadius: 8,
+          pointHoverRadius: 10,
+          backgroundColor: '#185FA5',
+          borderColor: '#0C447C',
+          borderWidth: 2,
+          order: 1,
+        },
+        {
+          label: `最大値 y = ${maxY}`,
+          data: maxPoints,
+          type: 'scatter',
+          pointRadius: 8,
+          pointHoverRadius: 10,
+          backgroundColor: '#E24B4A',
+          borderColor: '#A32D2D',
+          borderWidth: 2,
+          order: 2,
+        },
+        {
+          label: `頂点 (${vx}, ${vy})`,
+          data: [{ x: vx, y: vy }],
+          type: 'scatter',
+          pointRadius: 7,
+          pointHoverRadius: 9,
+          pointStyle: 'triangle',
+          backgroundColor: '#639922',
+          borderColor: '#3B6D11',
+          borderWidth: 2,
+          order: 3,
+        }
+      ];
+
+      const annotations = {};
+      minPoints.forEach((p, i) => {
+        annotations[`minXLine${i}`] = {
+          type: 'line', xMin: p.x, xMax: p.x,
+          yMin: yAxisMin, yMax: minY,
+          borderColor: 'rgba(24,95,165,0.4)', borderWidth: 1.5, borderDash: [4, 3],
+        };
+      });
+      annotations.minYLine = {
+        type: 'line', xMin: xAxisMin, xMax: Math.max(...minPoints.map(p => p.x)),
+        yMin: minY, yMax: minY,
+        borderColor: 'rgba(24,95,165,0.4)', borderWidth: 1.5, borderDash: [4, 3],
+      };
+      maxPoints.forEach((p, i) => {
+        annotations[`maxXLine${i}`] = {
+          type: 'line', xMin: p.x, xMax: p.x,
+          yMin: yAxisMin, yMax: maxY,
+          borderColor: 'rgba(226,75,74,0.4)', borderWidth: 1.5, borderDash: [4, 3],
+        };
+      });
+      annotations.maxYLine = {
+        type: 'line', xMin: xAxisMin, xMax: Math.max(...maxPoints.map(p => p.x)),
+        yMin: maxY, yMax: maxY,
+        borderColor: 'rgba(226,75,74,0.4)', borderWidth: 1.5, borderDash: [4, 3],
+      };
+
+      if (chart) { chart.destroy(); }
+
+      chart = new Chart(document.getElementById('qfChart'), {
+        type: 'scatter',
+        data: { datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 250 },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => `(${ctx.parsed.x.toFixed(3)}, ${ctx.parsed.y.toFixed(3)})`
+              }
+            },
+            annotation: { annotations }
+          },
+          scales: {
+            x: {
+              type: 'linear',
+              min: xAxisMin, max: xAxisMax,
+              title: { display: true, text: 'x', color: '#888780', font: { size: 12 } },
+              grid: { color: 'rgba(136,135,128,0.15)' },
+              ticks: { color: '#888780', font: { size: 11 }, maxTicksLimit: 11 }
+            },
+            y: {
+              min: yAxisMin, max: yAxisMax,
+              title: { display: true, text: 'y', color: '#888780', font: { size: 12 } },
+              grid: { color: 'rgba(136,135,128,0.15)' },
+              ticks: { color: '#888780', font: { size: 11 }, maxTicksLimit: 9 }
+            }
+          }
+        }
+      });
+    }
+
+    ['coef-a', 'coef-b', 'coef-c', 'dom-min', 'dom-max'].forEach(id => {
+      document.getElementById(id).addEventListener('input', compute);
+    });
+
+    compute();
+  </script>
+   <a href="../index.html">キャビネットへ戻る</a><br>
+</body>
+</html>
