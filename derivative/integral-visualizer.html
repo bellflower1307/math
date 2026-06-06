@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>積分ビジュアライザー</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="integral-visualizer.css">
+</head>
+<body>
+<button class="theme-toggle" id="theme-toggle">🌙 ダーク</button>
+
+<div class="title-area">
+  <div class="title-sub">Interactive</div>
+  <h1>積分ビジュアライザー</h1>
+  <div class="title-en">INTEGRAL VISUALIZER</div>
+</div>
+
+<div class="layout">
+
+  <!-- Canvas -->
+  <div class="card">
+    <div class="card-title">グラフ</div>
+    <canvas id="cv" width="480" height="400"></canvas>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap">
+      <span class="zoom-label">表示 x:</span>
+      <input type="range" id="zoom" min="2" max="16" step="1" value="6" style="flex:1;accent-color:#a78bfa;min-width:80px" oninput="onZoom()">
+      <span id="zoom-lbl" style="font-size:11px;color:#a78bfa;font-weight:700;min-width:40px">±6</span>
+      <span class="zoom-label">y:</span>
+      <input type="range" id="zoom-y" min="2" max="20" step="1" value="8" style="flex:1;accent-color:#a78bfa;min-width:80px" oninput="onZoom()">
+      <span id="zoom-y-lbl" style="font-size:11px;color:#a78bfa;font-weight:700;min-width:40px">±8</span>
+    </div>
+  </div>
+
+  <!-- Right -->
+  <div style="display:flex;flex-direction:column;gap:14px;flex:1;min-width:280px">
+
+    <!-- Function input -->
+    <div class="card">
+      <div class="card-title">関数入力</div>
+      <div class="func-input-wrap">
+        <span class="func-prefix">f(x) =</span>
+        <input type="text" id="func-input" value="x^2 - 2" oninput="onFuncInput()">
+      </div>
+      <div class="error-msg" id="error-msg"></div>
+      <div class="preset-row">
+        <button class="preset-btn" onclick="setPreset('x^2 - 2')">x²−2</button>
+        <button class="preset-btn" onclick="setPreset('x^3 - 3*x')">x³−3x</button>
+        <button class="preset-btn" onclick="setPreset('sin(x)')">sin(x)</button>
+        <button class="preset-btn" onclick="setPreset('cos(x)')">cos(x)</button>
+        <button class="preset-btn" onclick="setPreset('exp(x)')">e^x</button>
+        <button class="preset-btn" onclick="setPreset('sqrt(abs(x))')">√|x|</button>
+        <button class="preset-btn" onclick="setPreset('1/(1+x^2)')">1/(1+x²)</button>
+        <button class="preset-btn" onclick="setPreset('-x^2 + 4')">−x²+4</button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="card">
+      <div class="tab-bar">
+        <button class="tab-btn active" id="tab-defint" onclick="switchTab('defint')">定積分</button>
+        <button class="tab-btn" id="tab-riemann" onclick="switchTab('riemann')">区分求積</button>
+        <button class="tab-btn" id="tab-antideriv" onclick="switchTab('antideriv')">原始関数</button>
+      </div>
+
+      <!-- 定積分 -->
+      <div class="tab-panel active" id="panel-defint">
+        <div class="sl-row">
+          <div class="sl-header"><span>下限 a</span><span id="a-lbl" style="color:#38bdf8">-2.00</span></div>
+          <input type="range" id="a-slider" min="-6" max="6" step="0.1" value="-2" style="accent-color:#38bdf8" oninput="onAB()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>上限 b</span><span id="b-lbl" style="color:#f472b6">2.00</span></div>
+          <input type="range" id="b-slider" min="-6" max="6" step="0.1" value="2" style="accent-color:#f472b6" oninput="onAB()">
+        </div>
+        <div class="result-big">
+          <span style="color:var(--text-sub);font-size:12px">∫<sub>a</sub><sup>b</sup> f(x) dx = </span>
+          <span id="int-val" style="color:#4ade80">—</span>
+        </div>
+        <div class="info-grid">
+          <div class="info-box">
+            <div class="info-label">正の面積（+）</div>
+            <div class="info-val" id="pos-area" style="color:#4ade80">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">負の面積（−）</div>
+            <div class="info-val" id="neg-area" style="color:#f472b6">—</div>
+          </div>
+          <div class="info-box info-full">
+            <div class="info-label">絶対面積（|+| + |−|）</div>
+            <div class="info-val" id="abs-area" style="color:#facc15">—</div>
+          </div>
+        </div>
+        <div style="font-size:9px;color:var(--text-sub);margin-bottom:4px">正負の割合</div>
+        <div class="sign-bar-wrap">
+          <div class="sign-bar-pos" id="pos-bar" style="flex:1"></div>
+          <div class="sign-bar-neg" id="neg-bar" style="flex:0"></div>
+        </div>
+        <div class="hint">
+          <b>定積分</b> = x軸より上の面積（＋）− 下の面積（−）<br>
+          x軸をまたぐとき符号に注意！
+        </div>
+      </div>
+
+      <!-- 区分求積 -->
+      <div class="tab-panel" id="panel-riemann">
+        <div class="sl-row">
+          <div class="sl-header"><span>分割数 n</span><span id="n-lbl" style="color:#a78bfa">10</span></div>
+          <input type="range" id="n-slider" min="1" max="100" step="1" value="10" style="accent-color:#a78bfa" oninput="onN()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>短冊の種類</span><span id="rect-type-lbl" style="color:#a78bfa">左端</span></div>
+          <input type="range" id="rect-type" min="0" max="2" step="1" value="0" style="accent-color:#a78bfa" oninput="onRectType()">
+        </div>
+        <div class="info-grid">
+          <div class="info-box">
+            <div class="info-label">区分求積の近似値</div>
+            <div class="info-val" id="riemann-val" style="color:#a78bfa">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">真の積分値</div>
+            <div class="info-val" id="riemann-true" style="color:#4ade80">—</div>
+          </div>
+          <div class="info-box info-full">
+            <div class="info-label">誤差</div>
+            <div class="info-val" id="riemann-err" style="color:#facc15">—</div>
+          </div>
+        </div>
+        <div class="hint">
+          <b>n を増やす</b>ほど短冊が細かくなり<br>
+          誤差が 0 に近づく → これが積分の定義！<br>
+          左端・右端・中点で精度が変わる
+        </div>
+      </div>
+
+      <!-- 原始関数 -->
+      <div class="tab-panel" id="panel-antideriv">
+        <div class="sl-row">
+          <div class="sl-header"><span>基準点 a（F(a)=0）</span><span id="anti-a-lbl" style="color:#fb923c">0.00</span></div>
+          <input type="range" id="anti-a-slider" min="-6" max="6" step="0.1" value="0" style="accent-color:#fb923c" oninput="onAntiA()">
+        </div>
+        <div class="info-grid">
+          <div class="info-box info-full">
+            <div class="info-label">F(x) の値（現在の x まで）</div>
+            <div class="info-val" id="anti-val" style="color:#fb923c">—</div>
+          </div>
+        </div>
+        <div class="hint">
+          <b>原始関数 F(x)</b> = ∫<sub>a</sub><sup>x</sup> f(t) dt<br>
+          オレンジの曲線が F(x) のグラフ<br>
+          <b>微積分の基本定理：</b> F'(x) = f(x)<br>
+          → f(x) が正のとき F(x) は増加！
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<a href="../index.html" class="back-link">キャビネットへ戻る</a>
+
+<script src="integral-visualizer.js"></script>
+</body>
+</html>

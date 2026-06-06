@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ベクトルビジュアライザー</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="vector-visualizer.css">
+</head>
+<body>
+<button class="theme-toggle" id="theme-toggle">🌙 ダーク</button>
+
+<div class="title-area">
+  <div class="title-sub">Interactive</div>
+  <h1>ベクトルビジュアライザー</h1>
+  <div class="title-en">VECTOR VISUALIZER</div>
+</div>
+
+<div class="layout">
+  <!-- Canvas -->
+  <div class="card" style="display:flex;flex-direction:column;align-items:center;gap:12px">
+    <div class="card-title">座標平面　<span style="color:#94a3b8;font-size:10px">（矢印の先端をドラッグで移動）</span></div>
+    <div class="canvas-wrap">
+      <canvas id="cv" width="420" height="420"></canvas>
+    </div>
+    <div class="btn-row" style="margin-bottom:0">
+      <button class="btn btn-reset" onclick="resetVectors()">↺ リセット</button>
+      <button class="btn" id="show-sum-btn" style="background:#a78bfa22;color:#a78bfa;border:1px solid #a78bfa44" onclick="toggleSum()">合成ベクトル 表示中</button>
+    </div>
+  </div>
+
+  <!-- Right panel -->
+  <div style="display:flex;flex-direction:column;gap:16px;flex:1;min-width:280px">
+
+    <!-- Vector inputs -->
+    <div class="card">
+      <div class="card-title">ベクトル設定</div>
+      <!-- a -->
+      <div style="margin-bottom:14px">
+        <div style="font-size:11px;color:#f472b6;margin-bottom:6px;font-weight:700">● ベクトル a</div>
+        <div class="sl-row">
+          <div class="sl-header"><span>x 成分</span><span id="ax-lbl" style="color:#f472b6">3</span></div>
+          <input type="range" id="ax" min="-6" max="6" step="0.5" value="3" style="accent-color:#f472b6" oninput="onSlider()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>y 成分</span><span id="ay-lbl" style="color:#f472b6">2</span></div>
+          <input type="range" id="ay" min="-6" max="6" step="0.5" value="2" style="accent-color:#f472b6" oninput="onSlider()">
+        </div>
+      </div>
+      <!-- b -->
+      <div>
+        <div style="font-size:11px;color:#38bdf8;margin-bottom:6px;font-weight:700">● ベクトル b</div>
+        <div class="sl-row">
+          <div class="sl-header"><span>x 成分</span><span id="bx-lbl" style="color:#38bdf8">-2</span></div>
+          <input type="range" id="bx" min="-6" max="6" step="0.5" value="-2" style="accent-color:#38bdf8" oninput="onSlider()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>y 成分</span><span id="by-lbl" style="color:#38bdf8">3</span></div>
+          <input type="range" id="by" min="-6" max="6" step="0.5" value="3" style="accent-color:#38bdf8" oninput="onSlider()">
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: metrics -->
+    <div class="card">
+      <div class="tab-bar">
+        <button class="tab-btn active" id="tab-basic" onclick="switchTab('basic')">基本情報</button>
+        <button class="tab-btn" id="tab-dot" onclick="switchTab('dot')">内積</button>
+        <button class="tab-btn" id="tab-cross" onclick="switchTab('cross')">外積</button>
+        <button class="tab-btn" id="tab-proj" onclick="switchTab('proj')">射影</button>
+      </div>
+
+      <!-- basic -->
+      <div class="tab-panel active" id="panel-basic">
+        <div class="info-grid">
+          <div class="info-box">
+            <div class="info-label">|a| 大きさ</div>
+            <div class="info-val" id="mag-a" style="color:#f472b6">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">|b| 大きさ</div>
+            <div class="info-val" id="mag-b" style="color:#38bdf8">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">a の角度</div>
+            <div class="info-val" id="ang-a" style="color:#f472b6">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">b の角度</div>
+            <div class="info-val" id="ang-b" style="color:#38bdf8">—</div>
+          </div>
+          <div class="info-box" style="grid-column:1/-1">
+            <div class="info-label">a + b（合成ベクトル）</div>
+            <div class="info-val" id="sum-vec" style="color:#a78bfa">—</div>
+          </div>
+          <div class="info-box" style="grid-column:1/-1">
+            <div class="info-label">|a + b| 大きさ</div>
+            <div class="info-val" id="mag-sum" style="color:#a78bfa">—</div>
+          </div>
+        </div>
+        <div class="hint">
+          <span>三角不等式：</span> |a| + |b| ≥ |a + b|<br>
+          同じ向きのとき等号が成立する
+        </div>
+      </div>
+
+      <!-- dot -->
+      <div class="tab-panel" id="panel-dot">
+        <div class="info-grid">
+          <div class="info-box" style="grid-column:1/-1">
+            <div class="info-label">a · b = ax·bx + ay·by</div>
+            <div class="info-val" id="dot-val" style="color:#facc15">—</div>
+          </div>
+          <div class="info-box" style="grid-column:1/-1">
+            <div class="info-label">なす角 θ</div>
+            <div class="info-val" id="dot-angle" style="color:#facc15">—</div>
+          </div>
+        </div>
+        <div class="dp-bar-wrap"><div class="dp-bar" id="dp-bar" style="width:50%;background:#facc15"></div></div>
+        <div class="result-box" id="dot-meaning">—</div>
+        <div class="hint" style="margin-top:10px">
+          <span>a · b = |a||b|cosθ</span><br>
+          正 → 鋭角 ／ 0 → 直角 ／ 負 → 鈍角
+        </div>
+      </div>
+
+      <!-- cross -->
+      <div class="tab-panel" id="panel-cross">
+        <div class="info-grid">
+          <div class="info-box" style="grid-column:1/-1">
+            <div class="info-label">|a × b| = |ax·by − ay·bx|</div>
+            <div class="info-val" id="cross-val" style="color:#4ade80">—</div>
+          </div>
+          <div class="info-box" style="grid-column:1/-1">
+            <div class="info-label">平行四辺形の面積</div>
+            <div class="info-val" id="cross-area" style="color:#4ade80">—</div>
+          </div>
+          <div class="info-box" style="grid-column:1/-1">
+            <div class="info-label">三角形の面積（1/2）</div>
+            <div class="info-val" id="cross-tri" style="color:#4ade80">—</div>
+          </div>
+        </div>
+        <div class="hint">
+          <span>外積の大きさ</span> = 2つのベクトルが作る<br>
+          平行四辺形の面積に等しい<br>
+          0のとき → 2ベクトルは平行
+        </div>
+      </div>
+
+      <!-- proj -->
+      <div class="tab-panel" id="panel-proj">
+        <div class="info-grid">
+          <div class="info-box" style="grid-column:1/-1">
+            <div class="info-label">a の b 方向への射影（スカラー）</div>
+            <div class="info-val" id="proj-scalar" style="color:#fb923c">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">射影ベクトル x</div>
+            <div class="info-val" id="proj-vx" style="color:#fb923c">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">射影ベクトル y</div>
+            <div class="info-val" id="proj-vy" style="color:#fb923c">—</div>
+          </div>
+        </div>
+        <div class="hint">
+          <span>射影</span> = (a·b / |b|²) · b<br>
+          「a を b の方向に投影した影」のイメージ<br>
+          光が垂直に当たったときの影の長さ
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<a href="../index.html" class="back-link">キャビネットへ戻る</a>
+
+<script src="vector-visualizer.js"></script>
+</body>
+</html>

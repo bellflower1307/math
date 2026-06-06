@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>微分ビジュアライザー</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="derivative-visualizer.css">
+</head>
+<body>
+<button class="theme-toggle" id="theme-toggle">🌙 ダーク</button>
+
+<div class="title-area">
+  <div class="title-sub">Interactive</div>
+  <h1>微分ビジュアライザー</h1>
+  <div class="title-en">DERIVATIVE VISUALIZER</div>
+</div>
+
+<div class="layout">
+
+  <!-- Canvas -->
+  <div class="card">
+    <div class="card-title">グラフ　<span style="color:#94a3b8;font-size:10px">（グラフ上をマウスで動かす）</span></div>
+    <canvas id="cv" width="480" height="420"></canvas>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap">
+      <span class="zoom-label">表示範囲 x:</span>
+      <input type="range" id="zoom" min="2" max="20" step="1" value="8" style="flex:1;accent-color:#a78bfa;min-width:100px" oninput="onZoom()">
+      <span id="zoom-lbl" style="font-size:11px;color:#a78bfa;font-weight:700;min-width:60px">±8</span>
+      <span class="zoom-label">y:</span>
+      <input type="range" id="zoom-y" min="2" max="20" step="1" value="8" style="flex:1;accent-color:#a78bfa;min-width:100px" oninput="onZoom()">
+      <span id="zoom-y-lbl" style="font-size:11px;color:#a78bfa;font-weight:700;min-width:60px">±8</span>
+    </div>
+  </div>
+
+  <!-- Right panel -->
+  <div style="display:flex;flex-direction:column;gap:14px;flex:1;min-width:280px">
+
+    <!-- Function input -->
+    <div class="card">
+      <div class="card-title">関数入力</div>
+      <div class="func-input-wrap">
+        <span class="func-prefix">f(x) =</span>
+        <input type="text" id="func-input" value="x^2 - 2*x - 1" placeholder="例: sin(x), x^3 - x" oninput="onFuncInput()">
+      </div>
+      <div class="error-msg" id="error-msg"></div>
+      <div class="preset-row">
+        <button class="preset-btn" onclick="setPreset('x^2 - 2*x - 1')">x²−2x−1</button>
+        <button class="preset-btn" onclick="setPreset('x^3 - 3*x')">x³−3x</button>
+        <button class="preset-btn" onclick="setPreset('sin(x)')">sin(x)</button>
+        <button class="preset-btn" onclick="setPreset('cos(x)')">cos(x)</button>
+        <button class="preset-btn" onclick="setPreset('tan(x)')">tan(x)</button>
+        <button class="preset-btn" onclick="setPreset('exp(x)')">e^x</button>
+        <button class="preset-btn" onclick="setPreset('log(x)')">ln(x)</button>
+        <button class="preset-btn" onclick="setPreset('sqrt(x)')">√x</button>
+        <button class="preset-btn" onclick="setPreset('1/x')">1/x</button>
+        <button class="preset-btn" onclick="setPreset('x^4 - 4*x^2')">x⁴−4x²</button>
+      </div>
+      <div class="hint">
+        <b>使える記法：</b> + − * / ^ ( )<br>
+        sin cos tan exp log sqrt abs<br>
+        x^2 = x²　　exp(x) = eˣ　　log(x) = ln(x)
+      </div>
+    </div>
+
+    <!-- Tab panel -->
+    <div class="card">
+      <div class="tab-bar">
+        <button class="tab-btn active" id="tab-diff" onclick="switchTab('diff')">微分</button>
+        <button class="tab-btn" id="tab-limit" onclick="switchTab('limit')">極限・h法</button>
+        <button class="tab-btn" id="tab-info" onclick="switchTab('info')">特徴点</button>
+      </div>
+
+      <!-- 微分タブ -->
+      <div class="tab-panel active" id="panel-diff">
+        <div class="sl-row">
+          <div class="sl-header">
+            <span>接点 x =</span>
+            <span id="x-lbl">0.00</span>
+          </div>
+          <input type="range" id="x-slider" min="-8" max="8" step="0.05" value="1" style="accent-color:#f472b6" oninput="onXSlider()">
+        </div>
+        <div class="info-grid">
+          <div class="info-box">
+            <div class="info-label">f(x)</div>
+            <div class="info-val" id="fx-val" style="color:#38bdf8">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">f'(x)　接線の傾き</div>
+            <div class="info-val" id="dfx-val" style="color:#f472b6">—</div>
+          </div>
+          <div class="info-box info-full">
+            <div class="info-label">接線の方程式</div>
+            <div class="info-val" id="tangent-eq" style="color:#fb923c;font-size:12px">—</div>
+          </div>
+        </div>
+        <div class="toggle-row">
+          <button class="tog" id="tog-tangent" onclick="toggle('tangent')">接線 表示</button>
+          <button class="tog" id="tog-deriv" onclick="toggle('deriv')">f'(x) 表示</button>
+          <button class="tog" id="tog-normal" onclick="toggle('normal')">法線 非表示</button>
+        </div>
+        <div class="hint">
+          <b>接線の傾き</b> = その点での変化の速さ<br>
+          正 → 右上がり　負 → 右下がり　0 → 極値の可能性
+        </div>
+      </div>
+
+      <!-- 極限・h法タブ -->
+      <div class="tab-panel" id="panel-limit">
+        <div style="font-size:10px;color:var(--text-sub);margin-bottom:10px;line-height:1.8">
+          f'(x) = lim<sub>h→0</sub> [f(x+h) − f(x)] / h<br>
+          h を小さくすると接線に近づく様子を確認
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>h の大きさ</span><span id="h-lbl" style="color:#4ade80">1.00</span></div>
+          <input type="range" id="h-slider" min="0.05" max="4" step="0.05" value="1" style="accent-color:#4ade80" oninput="onHSlider()">
+        </div>
+        <div class="info-grid">
+          <div class="info-box info-full">
+            <div class="info-label">[f(x+h) − f(x)] / h　差分商</div>
+            <div class="info-val" id="diff-quot" style="color:#4ade80">—</div>
+          </div>
+          <div class="info-box info-full">
+            <div class="info-label">f'(x)　真の微分値（h→0）</div>
+            <div class="info-val" id="true-deriv" style="color:#f472b6">—</div>
+          </div>
+          <div class="info-box info-full">
+            <div class="info-label">誤差</div>
+            <div class="info-val" id="deriv-error" style="color:#facc15">—</div>
+          </div>
+        </div>
+        <div class="hint">
+          <b>割線</b>（緑）が h→0 のとき <b>接線</b>（ピンク）になる<br>
+          これが微分の定義！
+        </div>
+      </div>
+
+      <!-- 特徴点タブ -->
+      <div class="tab-panel" id="panel-info">
+        <div class="hint" style="margin-bottom:10px">表示範囲内での特徴点を自動検出します</div>
+        <div id="feature-list" style="display:flex;flex-direction:column;gap:7px"></div>
+        <div class="hint" style="margin-top:10px">
+          <b>極大</b>：f'(x)=0 かつ前後で + → −<br>
+          <b>極小</b>：f'(x)=0 かつ前後で − → +<br>
+          <b>変曲点</b>：f''(x)=0（凹凸の切り替わり）
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<a href="../index.html" class="back-link">キャビネットへ戻る</a>
+
+<script src="derivative-visualizer.js"></script>
+</body>
+</html>
