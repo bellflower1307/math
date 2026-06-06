@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>三角関数ビジュアライザー</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="trig-visualizer.css">
+</head>
+<body>
+
+<div class="title-area">
+  <div class="title-sub">Interactive</div>
+  <h1>三角関数ビジュアライザー</h1>
+  <div class="title-en">TRIGONOMETRIC FUNCTIONS</div>
+</div>
+
+<div class="main-layout">
+  <!-- Left: Unit Circle -->
+  <div class="card left-panel">
+    <div class="card-title">単位円</div>
+    <svg id="circle-svg" width="300" height="300" style="display:block"></svg>
+
+    <div class="values-row">
+      <div class="val-box" style="border-color:#f472b633">
+        <div class="val-label">sin θ</div>
+        <div class="val-num" id="sin-val" style="color:#f472b6">0.707</div>
+      </div>
+      <div class="val-box" style="border-color:#38bdf833">
+        <div class="val-label">cos θ</div>
+        <div class="val-num" id="cos-val" style="color:#38bdf8">0.707</div>
+      </div>
+      <div class="val-box" style="border-color:#4ade8033">
+        <div class="val-label">tan θ</div>
+        <div class="val-num" id="tan-val" style="color:#4ade80">1.000</div>
+      </div>
+    </div>
+
+    <div class="slider-area">
+      <div class="slider-header">
+        <span>角度 θ</span>
+        <span id="angle-label">45°</span>
+      </div>
+      <input type="range" id="angle-slider" min="0" max="359" value="45" style="accent-color:#a78bfa">
+    </div>
+
+    <button class="play-btn" id="play-btn">▶ アニメーション</button>
+  </div>
+
+  <!-- Right -->
+  <div class="right-panel">
+
+    <!-- Wave graph (sin+cos combined) -->
+    <div class="card">
+      <div class="card-title">波形グラフ（合成）</div>
+      <div class="graph-scroll">
+        <svg id="wave-svg" width="520" height="200" style="display:block"></svg>
+      </div>
+      <div class="toggle-row" style="margin-top:10px;margin-bottom:0">
+        <button class="toggle-btn" id="sin-toggle" style="background:#f472b222;border:1px solid #f472b6;color:#f472b6">sin</button>
+        <button class="toggle-btn" id="cos-toggle" style="background:#38bdf822;border:1px solid #38bdf8;color:#38bdf8">cos</button>
+      </div>
+    </div>
+
+    <!-- Tab graph panel -->
+    <div class="card">
+      <div class="card-title">関数グラフ（個別表示）</div>
+      <div class="tab-bar">
+        <button class="tab-btn active-sin" id="tab-sin" onclick="switchTab('sin')">sin(x)</button>
+        <button class="tab-btn" id="tab-cos" onclick="switchTab('cos')">cos(x)</button>
+        <button class="tab-btn" id="tab-tan" onclick="switchTab('tan')">tan(x)</button>
+      </div>
+
+      <!-- sin panel -->
+      <div class="tab-panel active" id="panel-sin">
+        <div class="func-info">
+          <div class="func-info-item"><div class="fi-label">現在値</div><div class="fi-val" id="tab-sin-val" style="color:#f472b6">0.707</div></div>
+          <div class="func-info-item"><div class="fi-label">最大値</div><div class="fi-val" style="color:#f472b6">1</div></div>
+          <div class="func-info-item"><div class="fi-label">最小値</div><div class="fi-val" style="color:#f472b6">−1</div></div>
+          <div class="func-info-item"><div class="fi-label">周期</div><div class="fi-val" style="color:#f472b6">2π</div></div>
+          <div class="func-info-item"><div class="fi-label">奇関数</div><div class="fi-val" style="color:#f472b6">sin(−x)=−sin(x)</div></div>
+        </div>
+        <div class="graph-scroll">
+          <svg id="tab-sin-svg" width="520" height="200" style="display:block"></svg>
+        </div>
+      </div>
+
+      <!-- cos panel -->
+      <div class="tab-panel" id="panel-cos">
+        <div class="func-info">
+          <div class="func-info-item"><div class="fi-label">現在値</div><div class="fi-val" id="tab-cos-val" style="color:#38bdf8">0.707</div></div>
+          <div class="func-info-item"><div class="fi-label">最大値</div><div class="fi-val" style="color:#38bdf8">1</div></div>
+          <div class="func-info-item"><div class="fi-label">最小値</div><div class="fi-val" style="color:#38bdf8">−1</div></div>
+          <div class="func-info-item"><div class="fi-label">周期</div><div class="fi-val" style="color:#38bdf8">2π</div></div>
+          <div class="func-info-item"><div class="fi-label">偶関数</div><div class="fi-val" style="color:#38bdf8">cos(−x)=cos(x)</div></div>
+        </div>
+        <div class="graph-scroll">
+          <svg id="tab-cos-svg" width="520" height="200" style="display:block"></svg>
+        </div>
+      </div>
+
+      <!-- tan panel -->
+      <div class="tab-panel" id="panel-tan">
+        <div class="func-info">
+          <div class="func-info-item"><div class="fi-label">現在値</div><div class="fi-val" id="tab-tan-val" style="color:#4ade80">1.000</div></div>
+          <div class="func-info-item"><div class="fi-label">最大値</div><div class="fi-val" style="color:#4ade80">±∞</div></div>
+          <div class="func-info-item"><div class="fi-label">周期</div><div class="fi-val" style="color:#4ade80">π</div></div>
+          <div class="func-info-item"><div class="fi-label">不連続点</div><div class="fi-val" style="color:#4ade80">π/2 + nπ</div></div>
+          <div class="func-info-item"><div class="fi-label">奇関数</div><div class="fi-val" style="color:#4ade80">tan(−x)=−tan(x)</div></div>
+        </div>
+        <div class="graph-scroll">
+          <svg id="tab-tan-svg" width="520" height="200" style="display:block"></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Parameters -->
+    <div class="card">
+      <div class="card-title">パラメータ調整　y = A · sin(Bx + C°)</div>
+      <div class="param-row">
+        <div class="param-header">
+          <div><span class="param-label">A（振幅）</span><span class="param-desc">波の高さ</span></div>
+          <span class="param-val" id="A-label" style="color:#4ade80">1</span>
+        </div>
+        <input type="range" id="A-slider" min="0.1" max="3" step="0.1" value="1" style="accent-color:#4ade80">
+      </div>
+      <div class="param-row">
+        <div class="param-header">
+          <div><span class="param-label">B（周波数）</span><span class="param-desc">波の速さ・周期</span></div>
+          <span class="param-val" id="B-label" style="color:#fb923c">1</span>
+        </div>
+        <input type="range" id="B-slider" min="0.5" max="4" step="0.5" value="1" style="accent-color:#fb923c">
+      </div>
+      <div class="param-row">
+        <div class="param-header">
+          <div><span class="param-label">C（位相）°</span><span class="param-desc">波のずれ</span></div>
+          <span class="param-val" id="C-label" style="color:#facc15">0</span>
+        </div>
+        <input type="range" id="C-slider" min="-180" max="180" step="10" value="0" style="accent-color:#facc15">
+      </div>
+      <div class="formula-box" id="formula">
+        <span style="color:#f472b6">y = 1</span><span style="color:#94a3b8"> · sin(</span><span style="color:#fb923c">1</span><span style="color:#94a3b8">x + </span><span style="color:#facc15">0°</span><span style="color:#94a3b8">)</span>
+      </div>
+    </div>
+
+    <!-- Tips -->
+    <div class="card tips-box">
+      <div class="tips-title">💡 使い方のヒント</div>
+      <div>・<span style="color:#f472b6">単位円</span>の点が回転すると<span style="color:#f472b6">sin波</span>が描かれる</div>
+      <div>・タブで <span style="color:#f472b6">sin</span> / <span style="color:#38bdf8">cos</span> / <span style="color:#4ade80">tan</span> を個別に大きく確認できる</div>
+      <div>・<span style="color:#4ade80">tan</span> は <span style="color:#4ade80">π/2</span> で不連続（垂直漸近線）になる</div>
+      <div>・<span style="color:#4ade80">A・B・C</span> スライダーで波形を自由にカスタマイズ</div>
+    </div>
+  </div>
+</div>
+
+<a href="../index.html" class="back-link">キャビネットへ戻る</a>
+
+<script src="trig-visualizer.js"></script>
+</body>
+</html>
