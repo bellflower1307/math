@@ -14,22 +14,35 @@ function svgEl(tag, attrs={}, text=''){
   return el;
 }
 
+function tc(){
+  const d=document.body.classList.contains('dark');
+  return {
+    axis:      d ? '#2a3a5c' : '#c0cce0',
+    ring:      d ? '#1e3a6e' : '#ccd8e8',
+    grid:      d ? '#1a2a4a' : '#e0e8f2',
+    gridZero:  d ? '#2a3a5c' : '#c4d0e0',
+    label:     d ? '#3a5a8c' : '#94a3b8',
+    angleDeg:  d ? '#4a6a9c' : '#94a3b8',
+  };
+}
+
 function drawCircle(){
   const svg=document.getElementById('circle-svg');
   svg.innerHTML='';
+  const col=tc();
   const rad=toRad(angle);
   const px=CX+R*Math.cos(rad), py=CY-R*Math.sin(rad);
 
-  svg.appendChild(svgEl('line',{x1:CX,y1:8,x2:CX,y2:H-8,stroke:'#2a3a5c','stroke-width':1}));
-  svg.appendChild(svgEl('line',{x1:8,y1:CY,x2:W-8,y2:CY,stroke:'#2a3a5c','stroke-width':1}));
+  svg.appendChild(svgEl('line',{x1:CX,y1:8,x2:CX,y2:H-8,stroke:col.axis,'stroke-width':1}));
+  svg.appendChild(svgEl('line',{x1:8,y1:CY,x2:W-8,y2:CY,stroke:col.axis,'stroke-width':1}));
 
   [0,90,180,270].forEach(d=>{
     const r2=toRad(d);
     const lx=CX+(R+16)*Math.cos(r2), ly=CY-(R+16)*Math.sin(r2);
-    svg.appendChild(svgEl('text',{x:lx,y:ly,fill:'#4a6a9c','font-size':10,'text-anchor':'middle','dominant-baseline':'middle','font-family':'monospace'},d+'°'));
+    svg.appendChild(svgEl('text',{x:lx,y:ly,fill:col.angleDeg,'font-size':10,'text-anchor':'middle','dominant-baseline':'middle','font-family':'monospace'},d+'°'));
   });
 
-  svg.appendChild(svgEl('circle',{cx:CX,cy:CY,r:R,fill:'none',stroke:'#1e3a6e','stroke-width':1.5}));
+  svg.appendChild(svgEl('circle',{cx:CX,cy:CY,r:R,fill:'none',stroke:col.ring,'stroke-width':1.5}));
   svg.appendChild(svgEl('line',{x1:CX,y1:CY,x2:px,y2:CY,stroke:'#38bdf8','stroke-width':2,'stroke-dasharray':'4,2'}));
   svg.appendChild(svgEl('line',{x1:px,y1:py,x2:px,y2:CY,stroke:'#f472b6','stroke-width':2,'stroke-dasharray':'4,2'}));
   svg.appendChild(svgEl('line',{x1:CX,y1:CY,x2:px,y2:py,stroke:'#a78bfa','stroke-width':2}));
@@ -39,10 +52,10 @@ function drawCircle(){
     svg.appendChild(svgEl('path',{d:`M ${CX+26} ${CY} A 26 26 0 ${large} 0 ${CX+26*Math.cos(rad)} ${CY-26*Math.sin(rad)}`,fill:'none',stroke:'#a78bfa','stroke-width':1.5,opacity:0.6}));
   }
 
-  svg.appendChild(svgEl('text',{x:CX+6,y:CY-R-4,fill:'#4a6a9c','font-size':9,'font-family':'monospace'},'1'));
-  svg.appendChild(svgEl('text',{x:CX+6,y:CY+R+10,fill:'#4a6a9c','font-size':9,'font-family':'monospace'},'-1'));
-  svg.appendChild(svgEl('text',{x:CX+R+3,y:CY+10,fill:'#4a6a9c','font-size':9,'font-family':'monospace'},'1'));
-  svg.appendChild(svgEl('text',{x:CX-R-12,y:CY+10,fill:'#4a6a9c','font-size':9,'font-family':'monospace'},'-1'));
+  svg.appendChild(svgEl('text',{x:CX+6,y:CY-R-4,fill:col.label,'font-size':9,'font-family':'monospace'},'1'));
+  svg.appendChild(svgEl('text',{x:CX+6,y:CY+R+10,fill:col.label,'font-size':9,'font-family':'monospace'},'-1'));
+  svg.appendChild(svgEl('text',{x:CX+R+3,y:CY+10,fill:col.label,'font-size':9,'font-family':'monospace'},'1'));
+  svg.appendChild(svgEl('text',{x:CX-R-12,y:CY+10,fill:col.label,'font-size':9,'font-family':'monospace'},'-1'));
 
   svg.appendChild(svgEl('circle',{cx:px,cy:py,r:6,fill:'#a78bfa',stroke:'#c4b5fd','stroke-width':2}));
 
@@ -52,20 +65,21 @@ function drawCircle(){
   svg.appendChild(svgEl('text',{x:lx2,y:py+9,fill:'#38bdf8','font-size':10,'font-family':'monospace'},'cos='+cosV));
 }
 
-function drawGrid(svg, yRange, color, ticks){
+function drawGrid(svg, yRange, ticks){
+  const col=tc();
   const [yMin,yMax]=yRange;
   const ySpan=yMax-yMin;
   ticks.forEach(v=>{
     const yv=GY+GH-(v-yMin)/ySpan*GH;
     if(yv<GY-2||yv>GY+GH+2) return;
-    svg.appendChild(svgEl('line',{x1:GX,y1:yv,x2:GX+GW,y2:yv,stroke:'#1a2a4a','stroke-width':v===0?1.5:0.7}));
-    svg.appendChild(svgEl('text',{x:GX-4,y:yv+4,fill:'#3a5a8c','font-size':9,'text-anchor':'end','font-family':'monospace'},String(v)));
+    svg.appendChild(svgEl('line',{x1:GX,y1:yv,x2:GX+GW,y2:yv,stroke:v===0?col.gridZero:col.grid,'stroke-width':v===0?1.5:0.7}));
+    svg.appendChild(svgEl('text',{x:GX-4,y:yv+4,fill:col.label,'font-size':9,'text-anchor':'end','font-family':'monospace'},String(v)));
   });
   [{label:'0',frac:0},{label:'π/2',frac:0.125},{label:'π',frac:0.25},{label:'3π/2',frac:0.375},
    {label:'2π',frac:0.5},{label:'5π/2',frac:0.625},{label:'3π',frac:0.75},{label:'7π/2',frac:0.875},{label:'4π',frac:1}].forEach(({label,frac})=>{
     const xv=GX+frac*GW;
-    svg.appendChild(svgEl('line',{x1:xv,y1:GY+GH,x2:xv,y2:GY+GH+4,stroke:'#2a3a5c','stroke-width':1}));
-    svg.appendChild(svgEl('text',{x:xv,y:GY+GH+14,fill:'#3a5a8c','font-size':9,'text-anchor':'middle','font-family':'monospace'},label));
+    svg.appendChild(svgEl('line',{x1:xv,y1:GY+GH,x2:xv,y2:GY+GH+4,stroke:col.gridZero,'stroke-width':1}));
+    svg.appendChild(svgEl('text',{x:xv,y:GY+GH+14,fill:col.label,'font-size':9,'text-anchor':'middle','font-family':'monospace'},label));
   });
 }
 
@@ -74,7 +88,7 @@ function drawWave(){
   svg.innerHTML='';
   const yRange=[-Math.max(A,1.1)*1.1,Math.max(A,1.1)*1.1];
   const ySpan=yRange[1]-yRange[0];
-  drawGrid(svg,yRange,null,[-2,-1,0,1,2].filter(v=>v>=yRange[0]&&v<=yRange[1]));
+  drawGrid(svg,yRange,[-2,-1,0,1,2].filter(v=>v>=yRange[0]&&v<=yRange[1]));
 
   const steps=500;
   const sinPts=[], cosPts=[];
@@ -111,7 +125,7 @@ function drawWave(){
 function drawTabSin(){
   const svg=document.getElementById('tab-sin-svg');
   svg.innerHTML='';
-  drawGrid(svg,[-1.4,1.4],null,[-1,-0.5,0,0.5,1]);
+  drawGrid(svg,[-1.4,1.4],[-1,-0.5,0,0.5,1]);
   const steps=500, pts=[];
   for(let i=0;i<=steps;i++){
     const t=(i/steps)*4*Math.PI;
@@ -134,7 +148,7 @@ function drawTabSin(){
 function drawTabCos(){
   const svg=document.getElementById('tab-cos-svg');
   svg.innerHTML='';
-  drawGrid(svg,[-1.4,1.4],null,[-1,-0.5,0,0.5,1]);
+  drawGrid(svg,[-1.4,1.4],[-1,-0.5,0,0.5,1]);
   const steps=500, pts=[];
   for(let i=0;i<=steps;i++){
     const t=(i/steps)*4*Math.PI;
@@ -158,7 +172,7 @@ function drawTabTan(){
   const svg=document.getElementById('tab-tan-svg');
   svg.innerHTML='';
   const yClamp=4;
-  drawGrid(svg,[-yClamp,yClamp],null,[-3,-2,-1,0,1,2,3]);
+  drawGrid(svg,[-yClamp,yClamp],[-3,-2,-1,0,1,2,3]);
 
   [0.125,0.375,0.625,0.875].forEach(frac=>{
     const xv=GX+frac*GW;
@@ -272,4 +286,19 @@ document.getElementById('cos-toggle').addEventListener('click',()=>{
   drawWave();
 });
 
+// テーマ復元 → 初期描画
+const _saved = localStorage.getItem('math-theme');
+if (_saved === 'dark') document.body.classList.add('dark');
+
 render();
+
+// テーマ切り替えボタン
+const _themeBtn = document.getElementById('theme-toggle');
+_themeBtn.textContent = document.body.classList.contains('dark') ? '☀ ライト' : '🌙 ダーク';
+_themeBtn.addEventListener('click', () => {
+  document.body.classList.toggle('dark');
+  const dark = document.body.classList.contains('dark');
+  localStorage.setItem('math-theme', dark ? 'dark' : 'light');
+  _themeBtn.textContent = dark ? '☀ ライト' : '🌙 ダーク';
+  render();
+});

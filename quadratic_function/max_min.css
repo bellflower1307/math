@@ -1,21 +1,80 @@
+/* ===== テーマ変数 ===== */
+:root {
+  --bg:             #f5f4f0;
+  --card-bg:        #ffffff;
+  --text:           #2c2c2a;
+  --text-sub:       #5f5e5a;
+  --text-label:     #888780;
+  --border:         rgba(44,44,42,0.15);
+  --input-border:   rgba(44,44,42,0.2);
+  --input-border-f: rgba(44,44,42,0.5);
+  --formula-bg:     #f5f4f0;
+  --formula-border: rgba(44,44,42,0.12);
+  --stat-bg:        #f5f4f0;
+  --legend-line:    #b4b2a9;
+  --footer:         #b4b2a9;
+  --toggle-bg:      #ffffff;
+  --toggle-border:  rgba(44,44,42,0.2);
+  --toggle-text:    #5f5e5a;
+}
+
+body.dark {
+  --bg:             #111118;
+  --card-bg:        #1c1c28;
+  --text:           #e4e4e0;
+  --text-sub:       #9a9a94;
+  --text-label:     #7a7a74;
+  --border:         rgba(180,180,180,0.12);
+  --input-border:   rgba(180,180,180,0.18);
+  --input-border-f: rgba(180,180,180,0.42);
+  --formula-bg:     #0e0e14;
+  --formula-border: rgba(180,180,180,0.10);
+  --stat-bg:        #0e0e14;
+  --legend-line:    #555550;
+  --footer:         #555550;
+  --toggle-bg:      #1c1c28;
+  --toggle-border:  rgba(180,180,180,0.2);
+  --toggle-text:    #9a9a94;
+}
+
 /* ===== リセット ===== */
-/* すべての要素でボックスサイズを border-box に統一し、
-   デフォルトの margin / padding を消す */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 /* ===== ページ全体 ===== */
 body {
   font-family: 'Helvetica Neue', Arial, sans-serif;
-  background: #f5f4f0;   /* ページ背景：温かみのあるオフホワイト */
-  color: #2c2c2a;        /* 本文テキスト：ほぼ黒 */
+  background: var(--bg);
+  color: var(--text);
   min-height: 100vh;
-  padding: 2rem 1rem;    /* 上下左右の余白 */
+  padding: 2rem 1rem;
+  transition: background 0.25s, color 0.25s;
+}
+
+/* ===== テーマ切り替えボタン ===== */
+.theme-toggle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  background: var(--toggle-bg);
+  border: 1px solid var(--toggle-border);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--toggle-text);
+  font-family: inherit;
+  z-index: 100;
+  transition: all 0.2s;
+}
+.theme-toggle:hover {
+  border-color: var(--input-border-f);
+  color: var(--text);
 }
 
 /* ===== 中央揃えコンテナ ===== */
 .container {
   max-width: 860px;
-  margin: 0 auto;        /* 水平中央揃え */
+  margin: 0 auto;
 }
 
 /* ===== ページヘッダー ===== */
@@ -26,44 +85,40 @@ header {
 header h1 {
   font-size: 22px;
   font-weight: 500;
-  color: #2c2c2a;
+  color: var(--text);
   margin-bottom: 4px;
 }
 
 header p {
   font-size: 13px;
-  color: #5f5e5a;        /* サブテキスト：やや薄いグレー */
+  color: var(--text-sub);
 }
 
-/* ===== カード（白い囲み枠） ===== */
-/* 入力エリアとグラフエリアの両方で使う共通コンテナ */
+/* ===== カード ===== */
 .card {
-  background: #fff;
-  border: 0.5px solid rgba(44,44,42,0.15);
+  background: var(--card-bg);
+  border: 0.5px solid var(--border);
   border-radius: 12px;
   padding: 1.5rem;
   margin-bottom: 1.25rem;
+  transition: background 0.25s, border-color 0.25s;
 }
 
-/* カード内の小見出し */
 .card-title {
   font-size: 13px;
   font-weight: 500;
-  color: #5f5e5a;
+  color: var(--text-sub);
   margin-bottom: 1rem;
-  text-transform: none;
   letter-spacing: 0.03em;
 }
 
-/* ===== 入力フォーム：レスポンシブ グリッド ===== */
-/* 画面幅に応じて列数が自動調整される（minmax(130px, 1fr)）*/
+/* ===== 入力フォーム ===== */
 .controls {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   gap: 12px;
 }
 
-/* ラベル + input を縦に並べる1フィールド */
 .field {
   display: flex;
   flex-direction: column;
@@ -72,42 +127,40 @@ header p {
 
 .field label {
   font-size: 12px;
-  color: #888780;        /* ラベル：淡いグレー */
+  color: var(--text-label);
 }
 
 .field input {
   width: 100%;
   padding: 8px 10px;
   font-size: 14px;
-  border: 0.5px solid rgba(44,44,42,0.2);
+  border: 0.5px solid var(--input-border);
   border-radius: 8px;
   outline: none;
-  background: #fff;
-  color: #2c2c2a;
-  transition: border-color 0.15s;  /* フォーカス時のアニメーション */
+  background: var(--card-bg);
+  color: var(--text);
+  transition: border-color 0.15s, background 0.25s, color 0.25s;
 }
 
-/* フォーカス時：枠線を少し濃くしてフィードバック */
 .field input:focus {
-  border-color: rgba(44,44,42,0.5);
+  border-color: var(--input-border-f);
 }
 
 /* ===== 数式表示バー ===== */
-/* f(x) = ax² + bx + c を等幅フォントで表示する帯 */
 .formula-bar {
   font-family: 'Courier New', monospace;
   font-size: 16px;
   font-weight: 500;
-  color: #2c2c2a;
-  background: #f5f4f0;
-  border: 0.5px solid rgba(44,44,42,0.12);
+  color: var(--text);
+  background: var(--formula-bg);
+  border: 0.5px solid var(--formula-border);
   border-radius: 8px;
   padding: 10px 14px;
   margin-bottom: 1.25rem;
+  transition: background 0.25s, color 0.25s;
 }
 
 /* ===== 統計カードグリッド ===== */
-/* 最小値・最大値・頂点の3枚のカードを横並びにする */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -115,41 +168,36 @@ header p {
   margin-bottom: 1.25rem;
 }
 
-/* 個々の統計カード */
 .stat-card {
-  background: #f5f4f0;
+  background: var(--stat-bg);
   border-radius: 8px;
   padding: 12px 14px;
+  transition: background 0.25s;
 }
 
-/* 統計カード内のラベル（"最小値" など） */
 .stat-label {
   font-size: 11px;
-  color: #888780;
+  color: var(--text-label);
   margin-bottom: 4px;
 }
 
-/* 統計カード内の数値（大きく目立たせる） */
 .stat-value {
   font-size: 20px;
   font-weight: 500;
 }
 
-/* 統計カード内の座標テキスト（等幅フォント） */
 .stat-coord {
   font-size: 11px;
-  color: #888780;
+  color: var(--text-label);
   margin-top: 2px;
   font-family: 'Courier New', monospace;
 }
 
-/* 最小値：青、最大値：赤、頂点：緑 */
-.stat-min { color: #185FA5; }
-.stat-max { color: #A32D2D; }
+.stat-min    { color: #185FA5; }
+.stat-max    { color: #A32D2D; }
 .stat-vertex { color: #3B6D11; }
 
 /* ===== エラーメッセージ ===== */
-/* 入力不正時に赤字で表示。min-height でレイアウトがずれないようにする */
 .error-msg {
   font-size: 13px;
   color: #A32D2D;
@@ -164,7 +212,7 @@ header p {
   gap: 16px;
   margin-bottom: 12px;
   font-size: 12px;
-  color: #5f5e5a;
+  color: var(--text-sub);
 }
 
 .legend-item {
@@ -173,22 +221,19 @@ header p {
   gap: 6px;
 }
 
-/* 凡例の丸いドット（最小値・最大値・頂点用） */
 .legend-dot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
 }
 
-/* 凡例の線分（f(x) カーブ用） */
 .legend-line {
   width: 20px;
   height: 2px;
-  background: #b4b2a9;
+  background: var(--legend-line);
 }
 
 /* ===== グラフ描画エリア ===== */
-/* Canvas の高さを固定し、Chart.js が responsive で幅に合わせて伸縮 */
 .chart-wrap {
   position: relative;
   width: 100%;
@@ -199,6 +244,6 @@ header p {
 footer {
   text-align: center;
   font-size: 12px;
-  color: #b4b2a9;
+  color: var(--footer);
   margin-top: 2rem;
 }

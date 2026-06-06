@@ -1,6 +1,14 @@
-// Chart.js のインスタンスを保持する変数。
-// 再描画時に古いグラフを destroy() してからインスタンスを上書きする。
 let chart = null;
+
+function chartColors() {
+  const dark = document.body.classList.contains('dark');
+  return {
+    line:  dark ? '#6a6a64' : '#b4b2a9',
+    grid:  dark ? 'rgba(150,155,170,0.12)' : 'rgba(136,135,128,0.15)',
+    tick:  dark ? '#7a7a74' : '#888780',
+    title: dark ? '#7a7a74' : '#888780',
+  };
+}
 
 /**
  * 数値を小数点以下 d 桁に丸めて返す。
@@ -151,7 +159,7 @@ function compute() {
     {
       label: 'f(x)',
       data: mainData,
-      borderColor: '#b4b2a9',   // 曲線の色：薄いグレー
+      borderColor: chartColors().line,
       borderWidth: 2,
       pointRadius: 0,           // 各点のドットは描かない
       tension: 0.3,             // ベジェ曲線で滑らかに
@@ -260,16 +268,15 @@ function compute() {
         x: {
           type: 'linear',
           min: xAxisMin, max: xAxisMax,
-          title: { display: true, text: 'x', color: '#888780', font: { size: 12 } },
-          grid: { color: 'rgba(136,135,128,0.15)' },  // 薄いグリッド線
-          ticks: { color: '#888780', font: { size: 11 }, maxTicksLimit: 11 }
+          title: { display: true, text: 'x', color: chartColors().title, font: { size: 12 } },
+          grid: { color: chartColors().grid },
+          ticks: { color: chartColors().tick, font: { size: 11 }, maxTicksLimit: 11 }
         },
-        // y 軸：パディング込みの範囲を設定
         y: {
           min: yAxisMin, max: yAxisMax,
-          title: { display: true, text: 'y', color: '#888780', font: { size: 12 } },
-          grid: { color: 'rgba(136,135,128,0.15)' },
-          ticks: { color: '#888780', font: { size: 11 }, maxTicksLimit: 9 }
+          title: { display: true, text: 'y', color: chartColors().title, font: { size: 12 } },
+          grid: { color: chartColors().grid },
+          ticks: { color: chartColors().tick, font: { size: 11 }, maxTicksLimit: 9 }
         }
       }
     }
@@ -282,5 +289,18 @@ function compute() {
   document.getElementById(id).addEventListener('input', compute);
 });
 
-// ページ読み込み時にデフォルト値（a=1, b=0, c=0, 定義域[-5,5]）で初期描画
+// テーマ復元 → 初期描画
+const _saved = localStorage.getItem('math-theme');
+if (_saved === 'dark') document.body.classList.add('dark');
+
 compute();
+
+const _themeBtn = document.getElementById('theme-toggle');
+_themeBtn.textContent = document.body.classList.contains('dark') ? '☀ ライト' : '🌙 ダーク';
+_themeBtn.addEventListener('click', () => {
+  document.body.classList.toggle('dark');
+  const dark = document.body.classList.contains('dark');
+  localStorage.setItem('math-theme', dark ? 'dark' : 'light');
+  _themeBtn.textContent = dark ? '☀ ライト' : '🌙 ダーク';
+  compute();
+});
