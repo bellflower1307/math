@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>図形と方程式ビジュアライザー</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="geometry-visualizer.css">
+</head>
+<body>
+<button class="theme-toggle" id="theme-toggle">🌙 ダーク</button>
+
+<div class="title-area">
+  <div class="title-sub">Interactive</div>
+  <h1>図形と方程式ビジュアライザー</h1>
+  <div class="title-en">GEOMETRY & EQUATIONS</div>
+</div>
+
+<div class="layout">
+  <!-- Canvas -->
+  <div class="card">
+    <div class="card-title">座標平面</div>
+    <canvas id="cv" width="460" height="460"></canvas>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap">
+      <span class="zoom-label">表示範囲 ±</span>
+      <input type="range" id="zoom" min="3" max="15" step="1" value="7" style="flex:1;accent-color:#a78bfa;min-width:80px" oninput="onZoom()">
+      <span id="zoom-lbl" style="font-size:11px;color:#a78bfa;font-weight:700;min-width:28px">7</span>
+    </div>
+  </div>
+
+  <!-- Right -->
+  <div style="display:flex;flex-direction:column;gap:14px;flex:1;min-width:280px;max-width:380px">
+    <div class="card">
+      <div class="tab-bar">
+        <button class="tab-btn active" id="tab-circle" onclick="switchTab('circle')">円</button>
+        <button class="tab-btn" id="tab-line" onclick="switchTab('line')">直線・領域</button>
+        <button class="tab-btn" id="tab-locus" onclick="switchTab('locus')">軌跡</button>
+        <button class="tab-btn" id="tab-dist" onclick="switchTab('dist')">点と距離</button>
+      </div>
+
+      <!-- 円 -->
+      <div class="tab-panel active" id="panel-circle">
+        <div class="sect-label">第1の円（青）</div>
+        <div class="eq-box" id="circle-eq" style="color:#38bdf8">x² + y² = 9</div>
+        <div class="sl-row">
+          <div class="sl-header"><span>中心 a（x座標）</span><span id="ca-lbl" style="color:#38bdf8">0</span></div>
+          <input type="range" id="ca" min="-5" max="5" step="0.5" value="0" style="accent-color:#38bdf8" oninput="redraw()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>中心 b（y座標）</span><span id="cb-lbl" style="color:#38bdf8">0</span></div>
+          <input type="range" id="cb" min="-5" max="5" step="0.5" value="0" style="accent-color:#38bdf8" oninput="redraw()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>半径 r₁</span><span id="cr-lbl" style="color:#38bdf8">3</span></div>
+          <input type="range" id="cr" min="0.5" max="6" step="0.5" value="3" style="accent-color:#38bdf8" oninput="redraw()">
+        </div>
+        <div class="sect-label">第2の円（緑）</div>
+        <div class="eq-box" id="circle-eq2" style="color:#4ade80">(x−2)² + (y−1)² = 4</div>
+        <div class="sl-row">
+          <div class="sl-header"><span>中心 a₂（x座標）</span><span id="ca2-lbl" style="color:#4ade80">2</span></div>
+          <input type="range" id="ca2" min="-5" max="5" step="0.5" value="2" style="accent-color:#4ade80" oninput="redraw()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>中心 b₂（y座標）</span><span id="cb2-lbl" style="color:#4ade80">1</span></div>
+          <input type="range" id="cb2" min="-5" max="5" step="0.5" value="1" style="accent-color:#4ade80" oninput="redraw()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>半径 r₂</span><span id="cr2-lbl" style="color:#4ade80">2</span></div>
+          <input type="range" id="cr2" min="0.5" max="6" step="0.5" value="2" style="accent-color:#4ade80" oninput="redraw()">
+        </div>
+        <div class="info-grid">
+          <div class="info-box info-full">
+            <div class="info-label">2円の位置関係</div>
+            <div class="info-val" id="circle-rel" style="color:#facc15">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">中心間距離 d</div>
+            <div class="info-val" id="circle-dist" style="color:#a78bfa">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">r₁ + r₂</div>
+            <div class="info-val" id="circle-rsum" style="color:#94a3b8">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">|r₁ − r₂|</div>
+            <div class="info-val" id="circle-rdiff" style="color:#94a3b8">—</div>
+          </div>
+        </div>
+        <div class="hint"><b>2円の位置関係：</b><br>d &gt; r₁+r₂ → 外部　d = r₁+r₂ → 外接<br>|r₁−r₂| &lt; d &lt; r₁+r₂ → 交わる<br>d = |r₁−r₂| → 内接　d &lt; |r₁−r₂| → 内部</div>
+      </div>
+
+      <!-- 直線・領域 -->
+      <div class="tab-panel" id="panel-line">
+        <!-- curve 1 -->
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+          <span style="width:10px;height:10px;border-radius:50%;background:#f472b6;display:inline-block;flex-shrink:0"></span>
+          <span style="font-size:10px;color:#f472b6;font-weight:700;min-width:32px">曲線①</span>
+          <input type="text" id="curve1-input" value="x - 1" class="curve-input-1" oninput="redraw()">
+        </div>
+        <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
+          <span style="font-size:9px;color:var(--text-sub);align-self:center">y =</span>
+          <button onclick="setC1('x - 1')" class="mini-preset-btn">x−1</button>
+          <button onclick="setC1('x^2 - 2')" class="mini-preset-btn">x²−2</button>
+          <button onclick="setC1('sin(x)')" class="mini-preset-btn">sin(x)</button>
+          <button onclick="setC1('sqrt(x)')" class="mini-preset-btn">√x</button>
+          <button onclick="setC1('-x^2 + 3')" class="mini-preset-btn">−x²+3</button>
+        </div>
+        <!-- curve 2 -->
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+          <span style="width:10px;height:10px;border-radius:50%;background:#38bdf8;display:inline-block;flex-shrink:0"></span>
+          <span style="font-size:10px;color:#38bdf8;font-weight:700;min-width:32px">曲線②</span>
+          <input type="text" id="curve2-input" value="-x^2 + 3" class="curve-input-2" oninput="redraw()">
+        </div>
+        <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
+          <span style="font-size:9px;color:var(--text-sub);align-self:center">y =</span>
+          <button onclick="setC2('x + 1')" class="mini-preset-btn">x+1</button>
+          <button onclick="setC2('-x^2 + 3')" class="mini-preset-btn">−x²+3</button>
+          <button onclick="setC2('cos(x)')" class="mini-preset-btn">cos(x)</button>
+          <button onclick="setC2('0')" class="mini-preset-btn">0（x軸）</button>
+          <button onclick="setC2('x^2 - 1')" class="mini-preset-btn">x²−1</button>
+        </div>
+        <!-- region mode -->
+        <div class="sect-label">領域の塗りつぶし</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:10px">
+          <button id="reg-none"   onclick="setRegion('none')"   style="border-radius:6px;padding:5px 4px;font-size:10px;cursor:pointer;font-family:inherit">なし</button>
+          <button id="reg-above1" onclick="setRegion('above1')" style="border-radius:6px;padding:5px 4px;font-size:10px;cursor:pointer;font-family:inherit">①の上</button>
+          <button id="reg-below1" onclick="setRegion('below1')" style="border-radius:6px;padding:5px 4px;font-size:10px;cursor:pointer;font-family:inherit">①の下</button>
+          <button id="reg-above2" onclick="setRegion('above2')" style="border-radius:6px;padding:5px 4px;font-size:10px;cursor:pointer;font-family:inherit">②の上</button>
+          <button id="reg-below2" onclick="setRegion('below2')" style="border-radius:6px;padding:5px 4px;font-size:10px;cursor:pointer;font-family:inherit">②の下</button>
+          <button id="reg-a1a2"   onclick="setRegion('a1a2')"   style="border-radius:6px;padding:5px 4px;font-size:10px;cursor:pointer;font-family:inherit">①上∩②上</button>
+          <button id="reg-a1b2"   onclick="setRegion('a1b2')"   style="border-radius:6px;padding:5px 4px;font-size:10px;cursor:pointer;font-family:inherit">①上∩②下</button>
+          <button id="reg-b1a2"   onclick="setRegion('b1a2')"   style="border-radius:6px;padding:5px 4px;font-size:10px;cursor:pointer;font-family:inherit">①下∩②上</button>
+          <button id="reg-b1b2"   onclick="setRegion('b1b2')"   style="border-radius:6px;padding:5px 4px;font-size:10px;cursor:pointer;font-family:inherit">①下∩②下</button>
+        </div>
+        <div class="info-box info-full" style="margin-bottom:8px">
+          <div class="info-label">現在の領域条件</div>
+          <div class="info-val" id="region-desc" style="color:#facc15;font-size:11px">なし</div>
+        </div>
+        <div class="hint">
+          <b>記法：</b> x^2=x²　-x^2+3　sin(x)　cos(x)　sqrt(x)　abs(x)<br>
+          <b>上=y&gt;曲線、下=y&lt;曲線　∩=かつ</b>
+        </div>
+        <div class="eq-box" id="line-eq" style="display:none"></div>
+      </div><!-- end panel-line -->
+
+      <!-- 軌跡 -->
+      <div class="tab-panel" id="panel-locus">
+        <div class="eq-box" id="locus-eq" style="color:#fb923c">2点A,Bから等距離の点の軌跡</div>
+        <div class="sect-label">点 A</div>
+        <div class="sl-row">
+          <div class="sl-header"><span>Ax</span><span id="lax-lbl" style="color:#f472b6">-2</span></div>
+          <input type="range" id="lax" min="-5" max="5" step="0.5" value="-2" style="accent-color:#f472b6" oninput="redraw()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>Ay</span><span id="lay-lbl" style="color:#f472b6">0</span></div>
+          <input type="range" id="lay" min="-5" max="5" step="0.5" value="0" style="accent-color:#f472b6" oninput="redraw()">
+        </div>
+        <div class="sect-label">点 B</div>
+        <div class="sl-row">
+          <div class="sl-header"><span>Bx</span><span id="lbx-lbl" style="color:#38bdf8">2</span></div>
+          <input type="range" id="lbx" min="-5" max="5" step="0.5" value="2" style="accent-color:#38bdf8" oninput="redraw()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>By</span><span id="lby-lbl" style="color:#38bdf8">0</span></div>
+          <input type="range" id="lby" min="-5" max="5" step="0.5" value="0" style="accent-color:#38bdf8" oninput="redraw()">
+        </div>
+        <div class="sect-label">軌跡の種類</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+          <button id="loc-perp"  onclick="setLocus('perp')"  style="flex:1;border-radius:6px;padding:5px;font-size:10px;cursor:pointer;font-family:inherit">垂直二等分線</button>
+          <button id="loc-apoll" onclick="setLocus('apoll')" style="flex:1;border-radius:6px;padding:5px;font-size:10px;cursor:pointer;font-family:inherit">アポロニウスの円</button>
+        </div>
+        <div id="apoll-row" style="display:none">
+          <div class="sl-row">
+            <div class="sl-header"><span>PA:PB = m:1　m =</span><span id="lm-lbl" style="color:#fb923c">2</span></div>
+            <input type="range" id="lm" min="0.5" max="4" step="0.5" value="2" style="accent-color:#fb923c" oninput="redraw()">
+          </div>
+        </div>
+        <div class="info-box info-full" style="margin-bottom:8px">
+          <div class="info-label">軌跡の方程式</div>
+          <div class="info-val" id="locus-result" style="color:#fb923c;font-size:11px">—</div>
+        </div>
+        <div class="hint"><b>垂直二等分線：</b>PA=PB となる点Pの軌跡<br><b>アポロニウスの円：</b>PA:PB=m:1 の点Pの軌跡<br>m≠1 のとき円、m=1 のとき直線になる</div>
+      </div>
+
+      <!-- 点と距離 -->
+      <div class="tab-panel" id="panel-dist">
+        <div class="eq-box" id="dist-eq" style="color:#4ade80">点(x₀,y₀)と直線 ax+by+c=0 の距離</div>
+        <div class="sect-label">点 P</div>
+        <div class="sl-row">
+          <div class="sl-header"><span>Px</span><span id="px-lbl" style="color:#4ade80">3</span></div>
+          <input type="range" id="px" min="-6" max="6" step="0.5" value="3" style="accent-color:#4ade80" oninput="redraw()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>Py</span><span id="py-lbl" style="color:#4ade80">3</span></div>
+          <input type="range" id="py" min="-6" max="6" step="0.5" value="3" style="accent-color:#4ade80" oninput="redraw()">
+        </div>
+        <div class="sect-label">直線 ax + by + c = 0</div>
+        <div class="sl-row">
+          <div class="sl-header"><span>a</span><span id="da-lbl" style="color:#f472b6">2</span></div>
+          <input type="range" id="da" min="-5" max="5" step="0.5" value="2" style="accent-color:#f472b6" oninput="redraw()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>b</span><span id="db-lbl" style="color:#f472b6">-1</span></div>
+          <input type="range" id="db" min="-5" max="5" step="0.5" value="-1" style="accent-color:#f472b6" oninput="redraw()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>c</span><span id="dc-lbl" style="color:#f472b6">-3</span></div>
+          <input type="range" id="dc" min="-8" max="8" step="0.5" value="-3" style="accent-color:#f472b6" oninput="redraw()">
+        </div>
+        <div class="info-grid">
+          <div class="info-box info-full">
+            <div class="info-label">点と直線の距離 d</div>
+            <div class="info-val" id="pt-dist" style="color:#4ade80;font-size:18px">—</div>
+          </div>
+          <div class="info-box info-full">
+            <div class="info-label">距離の公式</div>
+            <div class="info-val" id="dist-formula" style="color:#facc15;font-size:11px">d = |ax₀+by₀+c| / √(a²+b²)</div>
+          </div>
+        </div>
+        <div class="hint"><b>点と直線の距離：</b><br>d = |ax₀+by₀+c| / √(a²+b²)<br>垂線の足も図中に表示</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<a href="../index.html" class="back-link">キャビネットへ戻る</a>
+
+<script src="geometry-visualizer.js"></script>
+</body>
+</html>
