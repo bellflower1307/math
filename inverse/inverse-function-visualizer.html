@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>逆関数ビジュアライザー</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="inverse-function-visualizer.css">
+</head>
+<body>
+<button class="theme-toggle" id="theme-toggle">🌙 ダーク</button>
+
+<div class="title-area">
+  <div class="title-sub">Interactive</div>
+  <h1>逆関数ビジュアライザー</h1>
+  <div class="title-en">INVERSE FUNCTION VISUALIZER</div>
+</div>
+
+<div class="layout">
+  <!-- Canvas -->
+  <div class="card">
+    <div class="card-title">グラフ　<span style="color:#94a3b8;font-size:10px">グラフ上をマウスで動かす</span></div>
+    <canvas id="cv" width="480" height="480"></canvas>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap">
+      <span class="zoom-label">表示範囲 ±</span>
+      <input type="range" id="zoom" min="2" max="12" step="1" value="5" style="flex:1;accent-color:#a78bfa;min-width:80px" oninput="onZoom()">
+      <span id="zoom-lbl" style="font-size:11px;color:#a78bfa;font-weight:700;min-width:24px">5</span>
+    </div>
+  </div>
+
+  <!-- Right -->
+  <div style="display:flex;flex-direction:column;gap:14px;flex:1;min-width:280px;max-width:360px">
+
+    <!-- 関数入力 -->
+    <div class="card">
+      <div class="card-title">関数 f(x) の入力</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <span style="font-size:13px;color:#f472b6;font-weight:700;white-space:nowrap">f(x) =</span>
+        <input type="text" id="func-input" value="2*x + 1">
+      </div>
+      <div class="error-msg" id="error-msg"></div>
+      <div class="preset-row">
+        <button class="pbtn" onclick="setPreset('2*x + 1')">2x+1</button>
+        <button class="pbtn" onclick="setPreset('x^3')">x³</button>
+        <button class="pbtn" onclick="setPreset('x^2')">x²</button>
+        <button class="pbtn" onclick="setPreset('exp(x)')">eˣ</button>
+        <button class="pbtn" onclick="setPreset('log(x)')">ln(x)</button>
+        <button class="pbtn" onclick="setPreset('sqrt(x)')">√x</button>
+        <button class="pbtn" onclick="setPreset('x^3 - x')">x³−x</button>
+        <button class="pbtn" onclick="setPreset('sin(x)')">sin(x)</button>
+        <button class="pbtn" onclick="setPreset('2^x')">2^x</button>
+      </div>
+
+      <!-- 定義域制限 -->
+      <div class="sect">定義域の制限（逆関数を一価にする）</div>
+      <div class="sl-row">
+        <div class="sl-header"><span>x の下限 a</span><span id="dom-a-lbl" style="color:#4ade80">−5</span></div>
+        <input type="range" id="dom-a" min="-10" max="0" step="0.5" value="-5" style="accent-color:#4ade80" oninput="onDomain()">
+      </div>
+      <div class="sl-row">
+        <div class="sl-header"><span>x の上限 b</span><span id="dom-b-lbl" style="color:#4ade80">5</span></div>
+        <input type="range" id="dom-b" min="0" max="10" step="0.5" value="5" style="accent-color:#4ade80" oninput="onDomain()">
+      </div>
+
+      <!-- toggle -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+        <button class="tog" id="tog-mirror" onclick="toggleMirror()">y=x 表示中</button>
+        <button class="tog" id="tog-inv" onclick="toggleInv()">f⁻¹(x) 表示中</button>
+        <button class="tog" id="tog-point" onclick="togglePoint()">対応点 表示中</button>
+      </div>
+    </div>
+
+    <!-- 値の対応 -->
+    <div class="card">
+      <div class="card-title">点の対応</div>
+      <div class="sl-row">
+        <div class="sl-header"><span>点 x =</span><span id="x-lbl" style="color:#f472b6">1.00</span></div>
+        <input type="range" id="x-slider" min="-5" max="5" step="0.05" value="1" style="accent-color:#f472b6" oninput="onXSlider()">
+      </div>
+      <div class="info-grid">
+        <div class="info-box">
+          <div class="info-label">f(x)</div>
+          <div class="info-val" id="fx-val" style="color:#f472b6">—</div>
+        </div>
+        <div class="info-box">
+          <div class="info-label">f⁻¹(f(x))</div>
+          <div class="info-val" id="inv-val" style="color:#38bdf8">—</div>
+        </div>
+        <div class="info-box info-full">
+          <div class="info-label">対応関係</div>
+          <div class="info-val" id="corr-val" style="color:#fb923c;font-size:11px">—</div>
+        </div>
+      </div>
+
+      <!-- f と f⁻¹ の式表示 -->
+      <div class="eq-box">
+        <div style="color:#f472b6;margin-bottom:4px" id="eq-f">f(x) = 2x + 1</div>
+        <div style="color:#38bdf8" id="eq-inv">f⁻¹(x) = (x − 1) / 2　（数値近似）</div>
+      </div>
+
+      <div class="hint">
+        <b>逆関数の性質：</b><br>
+        ・f⁻¹(x) のグラフは f(x) を y=x で折り返したもの<br>
+        ・f(a) = b ならば f⁻¹(b) = a<br>
+        ・f⁻¹(f(x)) = x（合成すると元に戻る）<br>
+        <b>※</b> 単調でない関数は定義域を制限して一価にする
+      </div>
+    </div>
+
+    <!-- 単調性チェック -->
+    <div class="card">
+      <div class="card-title">単調性・逆関数の存在</div>
+      <div class="info-grid">
+        <div class="info-box info-full">
+          <div class="info-label">定義域内の単調性</div>
+          <div class="info-val" id="monotone-val" style="font-size:12px">—</div>
+        </div>
+        <div class="info-box info-full">
+          <div class="info-label">逆関数</div>
+          <div class="info-val" id="inv-exists" style="font-size:12px">—</div>
+        </div>
+      </div>
+      <div class="hint">
+        <b>逆関数が存在する条件：</b><br>
+        定義域内で f(x) が単調増加または単調減少であること<br>
+        （一対一対応 = 全単射）
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<a href="../index.html" class="back-link">キャビネットへ戻る</a>
+
+<script src="inverse-function-visualizer.js"></script>
+</body>
+</html>

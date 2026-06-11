@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>複素数平面ビジュアライザー</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="complex-plane-visualizer.css">
+</head>
+<body>
+<button class="theme-toggle" id="theme-toggle">🌙 ダーク</button>
+
+<div class="title-area">
+  <div class="title-sub">Interactive</div>
+  <h1>複素数平面ビジュアライザー</h1>
+  <div class="title-en">COMPLEX PLANE VISUALIZER</div>
+</div>
+
+<div class="layout">
+  <!-- Canvas -->
+  <div class="card">
+    <div class="card-title">複素数平面　<span style="color:#94a3b8;font-size:10px">矢印の先端をドラッグ</span></div>
+    <canvas id="cv" width="460" height="460"></canvas>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap">
+      <span class="zoom-label">表示範囲 ±</span>
+      <input type="range" id="zoom" min="2" max="10" step="1" value="4" style="flex:1;accent-color:#a78bfa" oninput="onZoom()">
+      <span id="zoom-lbl" style="font-size:11px;color:#a78bfa;font-weight:700;min-width:20px">4</span>
+    </div>
+  </div>
+
+  <!-- Right -->
+  <div style="display:flex;flex-direction:column;gap:14px;flex:1;min-width:280px;max-width:370px">
+    <div class="card">
+      <div class="tab-bar">
+        <button class="tab-btn active" id="tab-basic" onclick="switchTab('basic')">基本操作</button>
+        <button class="tab-btn" id="tab-arith" onclick="switchTab('arith')">四則演算</button>
+        <button class="tab-btn" id="tab-polar" onclick="switchTab('polar')">極形式</button>
+        <button class="tab-btn" id="tab-power" onclick="switchTab('power')">累乗・回転</button>
+      </div>
+
+      <!-- 基本操作 -->
+      <div class="tab-panel active" id="panel-basic">
+        <div class="sect">複素数 z = a + bi</div>
+        <div class="sl-row">
+          <div class="sl-header"><span>実部 a</span><span id="za-lbl" style="color:#f472b6">2</span></div>
+          <input type="range" id="za" min="-4" max="4" step="0.25" value="2" style="accent-color:#f472b6" oninput="onSlider()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>虚部 b</span><span id="zb-lbl" style="color:#f472b6">1</span></div>
+          <input type="range" id="zb" min="-4" max="4" step="0.25" value="1" style="accent-color:#f472b6" oninput="onSlider()">
+        </div>
+        <div class="eq-box" id="basic-eq" style="color:#f472b6">z = 2 + i</div>
+        <div class="info-grid">
+          <div class="info-box">
+            <div class="info-label">絶対値 |z|</div>
+            <div class="info-val" id="basic-abs" style="color:#facc15">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">偏角 arg(z)</div>
+            <div class="info-val" id="basic-arg" style="color:#facc15">—</div>
+          </div>
+          <div class="info-box info-full">
+            <div class="info-label">共役複素数 z̄</div>
+            <div class="info-val" id="basic-conj" style="color:#4ade80">—</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:4px">
+          <button class="tog" id="tog-conj" onclick="toggleConj()">z̄ 表示中</button>
+          <button class="tog" id="tog-circle" onclick="toggleCircle()">|z|の円 表示中</button>
+        </div>
+        <div class="hint">
+          <b>複素数平面：</b>横軸=実軸、縦軸=虚軸<br>
+          <b>|z|</b> = √(a²+b²)　点Oからの距離<br>
+          <b>arg(z)</b> = 正の実軸からの角度<br>
+          <b>z̄</b> = a − bi　実軸に関して対称
+        </div>
+      </div>
+
+      <!-- 四則演算 -->
+      <div class="tab-panel" id="panel-arith">
+        <div class="sect">z₁ = a + bi</div>
+        <div class="sl-row">
+          <div class="sl-header"><span>a (実部)</span><span id="z1a-lbl" style="color:#f472b6">2</span></div>
+          <input type="range" id="z1a" min="-4" max="4" step="0.25" value="2" style="accent-color:#f472b6" oninput="onSlider()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>b (虚部)</span><span id="z1b-lbl" style="color:#f472b6">1</span></div>
+          <input type="range" id="z1b" min="-4" max="4" step="0.25" value="1" style="accent-color:#f472b6" oninput="onSlider()">
+        </div>
+        <div class="sect">z₂ = c + di</div>
+        <div class="sl-row">
+          <div class="sl-header"><span>c (実部)</span><span id="z2a-lbl" style="color:#38bdf8">-1</span></div>
+          <input type="range" id="z2a" min="-4" max="4" step="0.25" value="-1" style="accent-color:#38bdf8" oninput="onSlider()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>d (虚部)</span><span id="z2b-lbl" style="color:#38bdf8">2</span></div>
+          <input type="range" id="z2b" min="-4" max="4" step="0.25" value="2" style="accent-color:#38bdf8" oninput="onSlider()">
+        </div>
+        <div class="sect">演算の選択</div>
+        <div style="display:flex;gap:6px;margin-bottom:10px">
+          <button id="op-add" onclick="setOp('add')" class="op-btn">z₁+z₂</button>
+          <button id="op-sub" onclick="setOp('sub')" class="op-btn">z₁−z₂</button>
+          <button id="op-mul" onclick="setOp('mul')" class="op-btn">z₁×z₂</button>
+          <button id="op-div" onclick="setOp('div')" class="op-btn">z₁÷z₂</button>
+        </div>
+        <div class="eq-box" id="arith-eq" style="color:#4ade80">—</div>
+        <div class="info-grid">
+          <div class="info-box">
+            <div class="info-label">結果の実部</div>
+            <div class="info-val" id="arith-re" style="color:#4ade80">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">結果の虚部</div>
+            <div class="info-val" id="arith-im" style="color:#4ade80">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">|結果|</div>
+            <div class="info-val" id="arith-abs" style="color:#facc15">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">arg(結果)</div>
+            <div class="info-val" id="arith-arg" style="color:#facc15">—</div>
+          </div>
+        </div>
+        <div class="hint">
+          <b>掛け算</b>：絶対値は積、偏角は和 → 回転＋拡大<br>
+          <b>割り算</b>：絶対値は商、偏角は差 → 回転＋縮小<br>
+          <b>足し算</b>：ベクトルの平行四辺形の法則
+        </div>
+      </div>
+
+      <!-- 極形式 -->
+      <div class="tab-panel" id="panel-polar">
+        <div class="sect">極形式　z = r(cosθ + i sinθ)</div>
+        <div class="sl-row">
+          <div class="sl-header"><span>絶対値 r</span><span id="pr-lbl" style="color:#facc15">2</span></div>
+          <input type="range" id="pr" min="0.25" max="4" step="0.25" value="2" style="accent-color:#facc15" oninput="onSlider()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>偏角 θ（度）</span><span id="pth-lbl" style="color:#facc15">30°</span></div>
+          <input type="range" id="pth" min="-180" max="180" step="5" value="30" style="accent-color:#facc15" oninput="onSlider()">
+        </div>
+        <div class="eq-box" id="polar-eq" style="color:#facc15">—</div>
+        <div class="info-grid">
+          <div class="info-box">
+            <div class="info-label">実部 a = r cosθ</div>
+            <div class="info-val" id="polar-re" style="color:#f472b6">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">虚部 b = r sinθ</div>
+            <div class="info-val" id="polar-im" style="color:#38bdf8">—</div>
+          </div>
+        </div>
+        <div class="hint">
+          <b>極形式</b>：絶対値 r と偏角 θ で複素数を表す<br>
+          r を変えると → 原点からの距離が変わる<br>
+          θ を変えると → 原点を中心に回転する<br>
+          <b>オイラーの公式：</b> e^(iθ) = cosθ + i sinθ
+        </div>
+      </div>
+
+      <!-- 累乗・回転 -->
+      <div class="tab-panel" id="panel-power">
+        <div class="sect">z = r(cosθ + i sinθ) の累乗</div>
+        <div class="sl-row">
+          <div class="sl-header"><span>絶対値 r</span><span id="wr-lbl" style="color:#fb923c">1.2</span></div>
+          <input type="range" id="wr" min="0.25" max="2" step="0.05" value="1.2" style="accent-color:#fb923c" oninput="onSlider()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>偏角 θ（度）</span><span id="wth-lbl" style="color:#fb923c">45°</span></div>
+          <input type="range" id="wth" min="-180" max="180" step="5" value="45" style="accent-color:#fb923c" oninput="onSlider()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>累乗 n</span><span id="wn-lbl" style="color:#a78bfa">3</span></div>
+          <input type="range" id="wn" min="1" max="8" step="1" value="3" style="accent-color:#a78bfa" oninput="onSlider()">
+        </div>
+        <div class="eq-box" id="power-eq" style="color:#fb923c">—</div>
+        <div class="info-grid">
+          <div class="info-box">
+            <div class="info-label">zⁿ の絶対値 rⁿ</div>
+            <div class="info-val" id="power-abs" style="color:#fb923c">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">zⁿ の偏角 nθ</div>
+            <div class="info-val" id="power-arg" style="color:#fb923c">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">zⁿ の実部</div>
+            <div class="info-val" id="power-re" style="color:#f472b6">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">zⁿ の虚部</div>
+            <div class="info-val" id="power-im" style="color:#38bdf8">—</div>
+          </div>
+        </div>
+        <div class="hint">
+          <b>ド・モアブルの定理：</b><br>
+          (cosθ + i sinθ)ⁿ = cos(nθ) + i sin(nθ)<br>
+          → zⁿ の絶対値 = rⁿ　偏角 = nθ<br>
+          r=1 のとき単位円上を回転するだけ！
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<a href="../index.html" class="back-link">キャビネットへ戻る</a>
+
+<script src="complex-plane-visualizer.js"></script>
+</body>
+</html>
