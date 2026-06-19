@@ -1,0 +1,149 @@
+/* ===== テーマ変数 ===== */
+:root {
+  --bg:            #f5f7fa;
+  --card-bg:       #ffffff;
+  --card-border:   #d4dde6;
+  --text:          #1e293b;
+  --text-sub:      #64748b;
+  --info-box-bg:   #f0f4f8;
+  --info-box-bdr:  #d4dde6;
+  --theorem-bg:    #f0f4f8;
+  --theorem-bdr:   #a78bfa;
+  --theorem-text:  #1e293b;
+  --tab-bar-bg:    #e8edf2;
+  --tab-btn-clr:   #64748b;
+  --sl-header-clr: #64748b;
+  --hint-clr:      #94a3b8;
+  --hint-accent:   #7c3aed;
+  --toggle-bg:     #ffffff;
+  --toggle-bdr:    #d4dde6;
+  --toggle-text:   #64748b;
+}
+
+body.dark {
+  --bg:            #050d1f;
+  --card-bg:       #0a1628;
+  --card-border:   #1e3a6e;
+  --text:          #e2e8f0;
+  --text-sub:      #4a6a9c;
+  --info-box-bg:   #0f1f3d;
+  --info-box-bdr:  #1e3a6e;
+  --theorem-bg:    #0f1f3d;
+  --theorem-bdr:   #a78bfa;
+  --theorem-text:  #e2e8f0;
+  --tab-bar-bg:    #060f22;
+  --tab-btn-clr:   #3a5a8c;
+  --sl-header-clr: #4a6a9c;
+  --hint-clr:      #3a5a8c;
+  --hint-accent:   #a78bfa;
+  --toggle-bg:     #0a1628;
+  --toggle-bdr:    #1e3a6e;
+  --toggle-text:   #4a6a9c;
+}
+
+/* ===== リセット ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+body {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'JetBrains Mono','Fira Code',monospace;
+  padding: 20px 14px;
+  transition: background 0.25s, color 0.25s;
+}
+
+/* ===== テーマ切り替えボタン ===== */
+.theme-toggle {
+  position: fixed;
+  top: 16px; right: 16px;
+  background: var(--toggle-bg);
+  border: 1px solid var(--toggle-bdr);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--toggle-text);
+  font-family: inherit;
+  z-index: 100;
+  transition: all 0.2s;
+}
+.theme-toggle:hover { color: var(--text); border-color: #a78bfa; }
+
+.title-area { text-align: center; margin-bottom: 16px; }
+.title-sub { font-size: 11px; letter-spacing: 6px; color: var(--text-sub); text-transform: uppercase; margin-bottom: 4px; }
+h1 {
+  font-size: clamp(17px,3.2vw,30px);
+  font-weight: 800;
+  background: linear-gradient(135deg,#38bdf8,#a78bfa,#f472b6);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.title-en { font-size: 11px; color: var(--text-sub); margin-top: 4px; letter-spacing: 2px; }
+
+.layout { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; align-items: flex-start; }
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 14px;
+  transition: background 0.25s, border-color 0.25s;
+}
+.card-title { font-size: 11px; color: var(--text-sub); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 10px; }
+
+canvas { display: block; border-radius: 10px; cursor: pointer; }
+
+.tab-bar {
+  display: flex; gap: 3px; background: var(--tab-bar-bg);
+  border-radius: 10px; padding: 4px; margin-bottom: 12px; flex-wrap: wrap;
+  transition: background 0.25s;
+}
+.tab-btn {
+  flex: 1; min-width: 70px; padding: 6px 4px; font-size: 10px;
+  font-family: inherit; border: none; border-radius: 7px; cursor: pointer;
+  font-weight: 700; letter-spacing: 1px; transition: all 0.2s;
+  background: transparent; color: var(--tab-btn-clr); white-space: nowrap;
+}
+.tab-btn.active { background: #a78bfa22; color: #a78bfa; box-shadow: 0 0 8px #a78bfa33; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 10px; }
+.info-box {
+  background: var(--info-box-bg); border-radius: 8px;
+  padding: 8px 12px; border: 1px solid var(--info-box-bdr);
+  transition: background 0.25s, border-color 0.25s;
+}
+.info-label { font-size: 9px; color: var(--text-sub); letter-spacing: 1px; margin-bottom: 3px; }
+.info-val { font-size: 14px; font-weight: 700; }
+.info-full { grid-column: 1/-1; }
+
+.theorem-box {
+  background: var(--theorem-bg);
+  border-left: 3px solid var(--theorem-bdr);
+  border-radius: 0 8px 8px 0;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  font-size: 11px; line-height: 1.9;
+  color: var(--theorem-text);
+  transition: background 0.25s;
+}
+.theorem-box b { color: #a78bfa; }
+
+.hint { font-size: 10px; color: var(--hint-clr); line-height: 1.9; margin-top: 8px; }
+.hint b { color: var(--hint-accent); }
+
+.sl-row { margin-bottom: 9px; }
+.sl-header { display: flex; justify-content: space-between; margin-bottom: 2px; font-size: 10px; color: var(--sl-header-clr); }
+.sl-header span:last-child { font-weight: 700; }
+input[type=range] { width: 100%; cursor: pointer; }
+
+.badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 700; margin-bottom: 8px; }
+
+/* ===== 戻るリンク ===== */
+.back-link {
+  display: block; margin-top: 24px; text-align: center;
+  color: var(--text-sub); font-size: 12px; letter-spacing: 1px; text-decoration: none;
+}
+.back-link:hover { color: #a78bfa; }

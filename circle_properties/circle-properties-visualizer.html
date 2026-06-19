@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>円の性質ビジュアライザー</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="circle-properties-visualizer.css">
+</head>
+<body>
+<button class="theme-toggle" id="theme-toggle">🌙 ダーク</button>
+
+<div class="title-area">
+  <div class="title-sub">Interactive</div>
+  <h1>円の性質ビジュアライザー</h1>
+  <div class="title-en">CIRCLE PROPERTIES VISUALIZER</div>
+</div>
+
+<div class="layout">
+  <div class="card">
+    <div class="card-title">図　<span style="color:#94a3b8;font-size:10px">点をドラッグして動かせます</span></div>
+    <canvas id="cv" width="460" height="460"></canvas>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:14px;flex:1;min-width:280px;max-width:380px">
+    <div class="card">
+      <div class="tab-bar">
+        <button class="tab-btn active" id="tab-inscribed" onclick="switchTab('inscribed')">円周角</button>
+        <button class="tab-btn" id="tab-tangent" onclick="switchTab('tangent')">接線</button>
+        <button class="tab-btn" id="tab-chord" onclick="switchTab('chord')">弦・弧</button>
+        <button class="tab-btn" id="tab-cyclic" onclick="switchTab('cyclic')">円に内接する四角形</button>
+      </div>
+
+      <!-- 円周角 -->
+      <div class="tab-panel active" id="panel-inscribed">
+        <div class="badge" style="background:#38bdf822;color:#38bdf8;border:1px solid #38bdf844">中学3年</div>
+        <div class="theorem-box">
+          <b>円周角の定理</b><br>
+          同じ弧に対する円周角は等しい<br>
+          円周角 = 中心角 ÷ 2
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>点Aの角度</span><span id="pa-lbl" style="color:#f472b6">200°</span></div>
+          <input type="range" id="pa" min="100" max="340" step="2" value="200" style="accent-color:#f472b6" oninput="redraw()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>点Bの角度</span><span id="pb-lbl" style="color:#4ade80">320°</span></div>
+          <input type="range" id="pb" min="100" max="340" step="2" value="320" style="accent-color:#4ade80" oninput="redraw()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>点Cの角度（別の円周角）</span><span id="pc-lbl" style="color:#fb923c">260°</span></div>
+          <input type="range" id="pc" min="100" max="340" step="2" value="260" style="accent-color:#fb923c" oninput="redraw()">
+        </div>
+        <div class="info-grid">
+          <div class="info-box">
+            <div class="info-label">中心角 ∠POQ</div>
+            <div class="info-val" id="central-angle" style="color:#facc15">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">円周角 ∠PAQ（点A）</div>
+            <div class="info-val" id="inscribed-a" style="color:#f472b6">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">円周角 ∠PCQ（点C）</div>
+            <div class="info-val" id="inscribed-c" style="color:#fb923c">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">中心角 = 円周角 × 2</div>
+            <div class="info-val" id="double-check" style="color:#4ade80">—</div>
+          </div>
+        </div>
+        <div class="hint">
+          <b>P・Q</b>：弧の端点（固定）<br>
+          <b>A・C</b>：円周上の点（スライダーで移動）<br>
+          A と C が同じ弧側にある限り ∠PAQ = ∠PCQ
+        </div>
+      </div>
+
+      <!-- 接線 -->
+      <div class="tab-panel" id="panel-tangent">
+        <div class="badge" style="background:#f472b622;color:#f472b6;border:1px solid #f472b644">中学3年</div>
+        <div class="theorem-box">
+          <b>接線の性質</b><br>
+          接線は接点で半径に垂直<br>
+          円外の1点から引いた2本の接線の長さは等しい
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>外部の点（距離）</span><span id="td-lbl" style="color:#facc15">3.5</span></div>
+          <input type="range" id="td" min="1.5" max="4.5" step="0.1" value="3.5" style="accent-color:#facc15" oninput="redraw()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>外部の点（角度）</span><span id="tth-lbl" style="color:#facc15">20°</span></div>
+          <input type="range" id="tth" min="-60" max="60" step="2" value="20" style="accent-color:#facc15" oninput="redraw()">
+        </div>
+        <div class="info-grid">
+          <div class="info-box">
+            <div class="info-label">接線の長さ PA</div>
+            <div class="info-val" id="tan-len-a" style="color:#f472b6">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">接線の長さ PB</div>
+            <div class="info-val" id="tan-len-b" style="color:#38bdf8">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">∠OAP（接線と半径）</div>
+            <div class="info-val" id="tan-angle-a" style="color:#4ade80">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">PA = PB</div>
+            <div class="info-val" id="tan-equal" style="color:#facc15">—</div>
+          </div>
+        </div>
+        <div class="hint">
+          <b>O</b>：円の中心　<b>P</b>：外部の点<br>
+          <b>A・B</b>：接点（接線と円が接する点）<br>
+          ∠OAP = ∠OBP = 90° が常に成立
+        </div>
+      </div>
+
+      <!-- 弦・弧 -->
+      <div class="tab-panel" id="panel-chord">
+        <div class="badge" style="background:#4ade8022;color:#4ade80;border:1px solid #4ade8044">中学2〜3年</div>
+        <div class="theorem-box">
+          <b>弦と弧の性質</b><br>
+          等しい弧 → 等しい弦・等しい中心角<br>
+          円の中心から弦への垂線は弦を二等分する
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>弦①の角度（中心角）</span><span id="ch1-lbl" style="color:#f472b6">80°</span></div>
+          <input type="range" id="ch1" min="10" max="170" step="2" value="80" style="accent-color:#f472b6" oninput="redraw()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>弦①の位置（回転）</span><span id="ch1r-lbl" style="color:#f472b6">30°</span></div>
+          <input type="range" id="ch1r" min="0" max="360" step="5" value="30" style="accent-color:#f472b6" oninput="redraw()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>弦②の角度（中心角）</span><span id="ch2-lbl" style="color:#38bdf8">80°</span></div>
+          <input type="range" id="ch2" min="10" max="170" step="2" value="80" style="accent-color:#38bdf8" oninput="redraw()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>弦②の位置（回転）</span><span id="ch2r-lbl" style="color:#38bdf8">150°</span></div>
+          <input type="range" id="ch2r" min="0" max="360" step="5" value="150" style="accent-color:#38bdf8" oninput="redraw()">
+        </div>
+        <div class="info-grid">
+          <div class="info-box">
+            <div class="info-label">弦①の長さ</div>
+            <div class="info-val" id="chord1-len" style="color:#f472b6">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">弦②の長さ</div>
+            <div class="info-val" id="chord2-len" style="color:#38bdf8">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">中心から弦①への距離</div>
+            <div class="info-val" id="chord1-dist" style="color:#f472b6">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">中心から弦②への距離</div>
+            <div class="info-val" id="chord2-dist" style="color:#38bdf8">—</div>
+          </div>
+          <div class="info-box info-full">
+            <div class="info-label">中心角①= 中心角② のとき</div>
+            <div class="info-val" id="chord-equal" style="color:#facc15;font-size:12px">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 円に内接する四角形 -->
+      <div class="tab-panel" id="panel-cyclic">
+        <div class="badge" style="background:#fb923c22;color:#fb923c;border:1px solid #fb923c44">中学3年</div>
+        <div class="theorem-box">
+          <b>円に内接する四角形</b><br>
+          対角の和 = 180°<br>
+          外角 = 内側の対角
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>点Aの角度</span><span id="qa-lbl" style="color:#f472b6">50°</span></div>
+          <input type="range" id="qa" min="10" max="170" step="2" value="50" style="accent-color:#f472b6" oninput="redraw()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>点Bの角度</span><span id="qb-lbl" style="color:#38bdf8">140°</span></div>
+          <input type="range" id="qb" min="10" max="350" step="2" value="140" style="accent-color:#38bdf8" oninput="redraw()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>点Cの角度</span><span id="qc-lbl" style="color:#4ade80">230°</span></div>
+          <input type="range" id="qc" min="10" max="350" step="2" value="230" style="accent-color:#4ade80" oninput="redraw()">
+        </div>
+        <div class="sl-row">
+          <div class="sl-header"><span>点Dの角度</span><span id="qd-lbl" style="color:#fb923c">320°</span></div>
+          <input type="range" id="qd" min="10" max="350" step="2" value="320" style="accent-color:#fb923c" oninput="redraw()">
+        </div>
+        <div class="info-grid">
+          <div class="info-box">
+            <div class="info-label">∠A（内角）</div>
+            <div class="info-val" id="qa-angle" style="color:#f472b6">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">∠C（内角）</div>
+            <div class="info-val" id="qc-angle" style="color:#4ade80">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">∠B（内角）</div>
+            <div class="info-val" id="qb-angle" style="color:#38bdf8">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">∠D（内角）</div>
+            <div class="info-val" id="qd-angle" style="color:#fb923c">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">∠A + ∠C</div>
+            <div class="info-val" id="qac-sum" style="color:#facc15">—</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">∠B + ∠D</div>
+            <div class="info-val" id="qbd-sum" style="color:#facc15">—</div>
+          </div>
+        </div>
+        <div class="hint">
+          <b>A・B・C・D</b>を動かしても∠A+∠C=180°は変わらない！
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<a href="../index.html" class="back-link">キャビネットへ戻る</a>
+
+<script src="circle-properties-visualizer.js"></script>
+</body>
+</html>

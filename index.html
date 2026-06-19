@@ -1,60 +1,405 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>Coleusのキャビネット</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coleusのキャビネット</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+/* ===== テーマ変数 ===== */
+:root {
+  --bg:          #f5f7fa;
+  --bg2:         #eef1f6;
+  --card-bg:     #ffffff;
+  --card-bdr:    #d4dde6;
+  --text:        #1e293b;
+  --text-sub:    #64748b;
+  --text-muted:  #94a3b8;
+  --section-bdr: #d4dde6;
+  --toggle-bg:   #ffffff;
+  --toggle-bdr:  #d4dde6;
+  --toggle-text: #64748b;
+}
+body.dark {
+  --bg:          #050d1f;
+  --bg2:         #060f22;
+  --card-bg:     #0a1628;
+  --card-bdr:    #1e3a6e;
+  --text:        #e2e8f0;
+  --text-sub:    #4a6a9c;
+  --text-muted:  #2a4a6c;
+  --section-bdr: #1e3a6e;
+  --toggle-bg:   #0a1628;
+  --toggle-bdr:  #1e3a6e;
+  --toggle-text: #4a6a9c;
+}
 
-  <!-- 共通CSS -->
-  <link rel="stylesheet" href="style.css">
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-  <!-- MathJax（TeX数式） -->
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+body {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'JetBrains Mono','Fira Code',monospace;
+  padding: 0 0 60px;
+  transition: background 0.25s, color 0.25s;
+}
 
-  <!-- 目次スクリプト -->
-  <script src="toc.js" defer></script>
+/* ===== テーマトグル ===== */
+.theme-toggle {
+  position: fixed;
+  top: 16px; right: 20px;
+  background: var(--toggle-bg);
+  border: 1px solid var(--toggle-bdr);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--toggle-text);
+  font-family: inherit;
+  z-index: 100;
+  transition: all 0.2s;
+}
+.theme-toggle:hover { border-color: #a78bfa; color: var(--text); }
+
+/* ===== ヒーローヘッダー ===== */
+.hero {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--section-bdr);
+  padding: 56px 24px 40px;
+  text-align: center;
+  transition: background 0.25s;
+}
+.hero-label {
+  font-size: 10px;
+  letter-spacing: 8px;
+  color: var(--text-sub);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.hero h1 {
+  font-size: clamp(24px, 5vw, 48px);
+  font-weight: 800;
+  background: linear-gradient(135deg, #a78bfa, #38bdf8, #f472b6, #facc15);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 12px;
+  letter-spacing: -1px;
+}
+.hero-sub {
+  font-size: 12px;
+  color: var(--text-sub);
+  letter-spacing: 2px;
+  margin-bottom: 24px;
+}
+.hero-desc {
+  font-size: 13px;
+  color: var(--text-sub);
+  max-width: 480px;
+  margin: 0 auto;
+  line-height: 2;
+}
+
+/* ===== メインコンテンツ ===== */
+.content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* ===== セクション ===== */
+.section {
+  margin-top: 48px;
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--section-bdr);
+}
+.section-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.section-badge.high {
+  background: #a78bfa22;
+  color: #a78bfa;
+  border: 1px solid #a78bfa44;
+}
+.section-badge.mid {
+  background: #38bdf822;
+  color: #38bdf8;
+  border: 1px solid #38bdf844;
+}
+.section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+.section-count {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* ===== カードグリッド ===== */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+/* ===== カード ===== */
+.viz-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-bdr);
+  border-radius: 16px;
+  padding: 20px 18px 18px;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.viz-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--card-accent, #a78bfa);
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+.viz-card:hover {
+  border-color: var(--card-accent, #a78bfa);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+.viz-card:hover::before { opacity: 1; }
+body.dark .viz-card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+.card-icon {
+  font-size: 22px;
+  line-height: 1;
+  filter: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card-icon-bg, #a78bfa18);
+  border: 1px solid var(--card-icon-bdr, #a78bfa33);
+  flex-shrink: 0;
+}
+.card-body { flex: 1; }
+.card-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 5px;
+  line-height: 1.4;
+}
+.card-desc {
+  font-size: 10px;
+  color: var(--text-sub);
+  line-height: 1.8;
+}
+.card-formula {
+  font-size: 11px;
+  color: var(--card-accent, #a78bfa);
+  letter-spacing: 0.5px;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--card-bdr);
+  opacity: 0.8;
+}
+.card-arrow {
+  position: absolute;
+  bottom: 16px; right: 16px;
+  font-size: 14px;
+  color: var(--card-accent, #a78bfa);
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.viz-card:hover .card-arrow { opacity: 1; transform: translateX(3px); }
+
+/* ===== フッター ===== */
+.footer {
+  margin-top: 64px;
+  text-align: center;
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 2px;
+}
+</style>
 </head>
-
 <body>
 
-  <h1>Coleusのキャビネット</h1>
+<button class="theme-toggle" id="theme-toggle">🌙 ダーク</button>
 
-  <!-- 目次 -->
-  <div id="toc">
-    <strong>目次</strong>
-    <ul id="toc-list"></ul>
+<!-- ヒーローヘッダー -->
+<div class="hero">
+  <div class="hero-label">Interactive Math</div>
+  <h1>Coleusのキャビネット</h1>
+  <div class="hero-sub">COLEUS' CABINET OF MATHEMATICS</div>
+  <div class="hero-desc">自己学習で作成した数学インタラクティブビジュアライザー集</div>
+</div>
+
+<div class="content">
+
+  <!-- 高校数学 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-badge high">高校数学</span>
+      <span class="section-title">高校</span>
+      <span class="section-count">8 visualizers</span>
+    </div>
+    <div class="card-grid">
+
+      <a href="quadratic_function/max_min.html" class="viz-card"
+         style="--card-accent:#a78bfa;--card-icon-bg:#a78bfa18;--card-icon-bdr:#a78bfa33">
+        <div class="card-icon">📐</div>
+        <div class="card-body">
+          <div class="card-name">二次関数の最大値・最小値</div>
+          <div class="card-desc">定義域を動かしながら最大値・最小値がどう変化するかを視覚的に確認</div>
+          <div class="card-formula">y = ax² + bx + c</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+      <a href="trig_function/trig-visualizer.html" class="viz-card"
+         style="--card-accent:#f472b6;--card-icon-bg:#f472b618;--card-icon-bdr:#f472b633">
+        <div class="card-icon">🌊</div>
+        <div class="card-body">
+          <div class="card-name">三角関数ビジュアライザー</div>
+          <div class="card-desc">単位円と sin・cos・tan のグラフを同時にアニメーション表示</div>
+          <div class="card-formula">sin² θ + cos² θ = 1</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+      <a href="vector/vector-visualizer.html" class="viz-card"
+         style="--card-accent:#38bdf8;--card-icon-bg:#38bdf818;--card-icon-bdr:#38bdf833">
+        <div class="card-icon">↗</div>
+        <div class="card-body">
+          <div class="card-name">ベクトルビジュアライザー</div>
+          <div class="card-desc">ベクトルの和・差・スカラー倍を矢印で直感的に操作</div>
+          <div class="card-formula">|a⃗ + b⃗| ≤ |a⃗| + |b⃗|</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+      <a href="derivative/derivative-visualizer.html" class="viz-card"
+         style="--card-accent:#4ade80;--card-icon-bg:#4ade8018;--card-icon-bdr:#4ade8033">
+        <div class="card-icon">📈</div>
+        <div class="card-body">
+          <div class="card-name">微分ビジュアライザー</div>
+          <div class="card-desc">接線・法線・導関数・特徴点を動的に表示。h法による極限も確認</div>
+          <div class="card-formula">f'(x) = lim(h→0) [f(x+h)−f(x)]/h</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+      <a href="derivative/integral-visualizer.html" class="viz-card"
+         style="--card-accent:#fb923c;--card-icon-bg:#fb923c18;--card-icon-bdr:#fb923c33">
+        <div class="card-icon">∫</div>
+        <div class="card-body">
+          <div class="card-name">積分ビジュアライザー</div>
+          <div class="card-desc">定積分・区分求積法・原始関数を短冊アニメーションで理解</div>
+          <div class="card-formula">∫ₐᵇ f(x) dx = F(b) − F(a)</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+      <a href="geometry/geometry-visualizer.html" class="viz-card"
+         style="--card-accent:#facc15;--card-icon-bg:#facc1518;--card-icon-bdr:#facc1533">
+        <div class="card-icon">⭕</div>
+        <div class="card-body">
+          <div class="card-name">図形と方程式ビジュアライザー</div>
+          <div class="card-desc">円・直線・領域・軌跡・点と直線の距離を座標平面上で操作</div>
+          <div class="card-formula">(x−a)² + (y−b)² = r²</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+      <a href="inverse/inverse-function-visualizer.html" class="viz-card"
+         style="--card-accent:#f472b6;--card-icon-bg:#f472b618;--card-icon-bdr:#f472b633">
+        <div class="card-icon">↔</div>
+        <div class="card-body">
+          <div class="card-name">逆関数ビジュアライザー</div>
+          <div class="card-desc">y=x への折り返し・定義域制限・単調性チェックをインタラクティブに確認</div>
+          <div class="card-formula">f⁻¹(f(x)) = x</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+      <a href="complex_plane/complex-plane-visualizer.html" class="viz-card"
+         style="--card-accent:#a78bfa;--card-icon-bg:#a78bfa18;--card-icon-bdr:#a78bfa33">
+        <div class="card-icon">ℂ</div>
+        <div class="card-body">
+          <div class="card-name">複素数平面ビジュアライザー</div>
+          <div class="card-desc">複素数の四則演算・極形式・ド・モアブルの定理を図示</div>
+          <div class="card-formula">e^(iθ) = cosθ + i sinθ</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+    </div>
   </div>
 
-  <!-- ここから本文 -->
-   <h2>はじめに</h2>
-   <p>これは自己学習で作成したサイトです。</p>
-   
-   <h2>種別</h2>
-   <ul>
-     <li><a href="quadratic_function/max_min.html">二次関数の最大値・最小値を視覚的に捉える</a></li>
-     <li><a href="trig_function/trig-visualizer.html">三角関数ビジュアライザー</a></li>
-     <li><a href="vector/vector-visualizer.html">ベクトルビジュアライザー</a></li>
-     <li><a href="derivative/derivative-visualizer.html">微分ビジュアライザー</a></li>
-     <li><a href="derivative/integral-visualizer.html">積分ビジュアライザー</a></li>
-     <li><a href="geometry/geometry-visualizer.html">図形と方程式ビジュアライザー</a></li>
-     <li><a href="inverse/inverse-function-visualizer.html">逆関数ビジュアライザー</a></li>
-     <li><a href="complex_plane/complex-plane-visualizer.html">複素数平面ビジュアライザー</a></li>
-   </ul>
+  <!-- 中学数学 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-badge mid">中学数学</span>
+      <span class="section-title">中学</span>
+      <span class="section-count">1 visualizer</span>
+    </div>
+    <div class="card-grid">
 
-  <!--
-  <h2>はじめに</h2>
-  <p>ここに学習ノートを書き始められます。</p>
+      <a href="circle_properties/circle-properties-visualizer.html" class="viz-card"
+         style="--card-accent:#38bdf8;--card-icon-bg:#38bdf818;--card-icon-bdr:#38bdf833">
+        <div class="card-icon">◯</div>
+        <div class="card-body">
+          <div class="card-name">円の性質ビジュアライザー</div>
+          <div class="card-desc">円周角・接線・弦と弧・内接する四角形の定理をスライダーで確認</div>
+          <div class="card-formula">円周角 = 中心角 ÷ 2</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
 
-  <h2>数学の例</h2>
-  <p>TeX 記法で数式を書けます：</p>
-  <p>$$ \int_0^1 x^2 \, dx = \frac{1}{3} $$</p>
+    </div>
+  </div>
 
-  <h3>微分の例</h3>
-  <p>$$ \frac{d}{dx} x^n = nx^{n-1} $$</p>
+  <div class="footer">COLEUS' CABINET &nbsp;·&nbsp; INTERACTIVE MATH VISUALIZERS</div>
 
-  <h2>コードの例</h2>
-  <pre><code>print("Hello, world!")</code></pre>
-    -->
+</div>
 
+<script>
+const btn=document.getElementById('theme-toggle');
+const saved=localStorage.getItem('math-theme');
+if(saved==='dark') document.body.classList.add('dark');
+btn.textContent=document.body.classList.contains('dark')?'☀ ライト':'🌙 ダーク';
+btn.addEventListener('click',()=>{
+  document.body.classList.toggle('dark');
+  const dark=document.body.classList.contains('dark');
+  localStorage.setItem('math-theme',dark?'dark':'light');
+  btn.textContent=dark?'☀ ライト':'🌙 ダーク';
+});
+</script>
 </body>
 </html>
